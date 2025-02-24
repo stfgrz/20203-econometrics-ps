@@ -25,7 +25,8 @@ grstyle set plain, horizontal
 local user = c(username)
 
 if ("`user'" == "stefanograziosi") {
-    global filepath "/Users/stefanograziosi/Desktop/Bocconi/ESS Y1S2/Econometrics/Problem Sets/ps1"
+	cd "/Users/stefanograziosi/Documents/GitHub/20203-econometrics-ps/ps1"
+    global filepath "/Users/stefanograziosi/Documents/GitHub/20203-econometrics-ps/ps1"
 }
 
 if ("`user'" == "sofiapisu") {
