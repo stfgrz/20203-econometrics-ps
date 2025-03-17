@@ -88,7 +88,8 @@ estimates store sector_fe
 
 anova n i.sector
 
-testparm i.sector
+
+
 
 /* As an alternative, we can also add interaction terms for differential slopes */
 
