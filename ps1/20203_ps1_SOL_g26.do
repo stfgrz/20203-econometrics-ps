@@ -86,20 +86,20 @@ testparm w k
 regress n w k i.sector
 estimates store sector_fe
 
-anova n i.sector
-
 testparm i.sector
+
+anova n i.sector
 
 /* As an alternative, we can also add interaction terms for differential slopes */
 
 regress n w k i.sector##(c.w c.k)
 estimates store sector_interact
 
+testparm i.sector#c.w i.sector#c.k
+
 anova n i.sector#c.w
 
 anova n i.sector#c.k
-
-testparm i.sector#c.w i.sector#c.k
 
 *=============================================================================
 /* 								Question 5 									*/
@@ -111,13 +111,15 @@ regress n w k i.sector##(c.w c.k)
 /* 								Question 6 									*/
 *=============================================================================
 
+estat imtest, white
+
 estat hettest
 
 *=============================================================================
 /* 								Question 7 									*/
 *=============================================================================
 
-regress n w k i.sector, robust
+regress n w k i.sector, vce(robust)
 
 *=============================================================================
 /* 								Final Checks 								*/
