@@ -16,13 +16,11 @@ set more off
 /*ssc install ritest, replace**/
 
 /* For graphs & stuff */
-/* ssc install grstyle, replace
+ ssc install grstyle, replace
 ssc install coefplot, replace
 graph set window fontface "Lato"
 grstyle init
 grstyle set plain, horizontal
-
-*/
 
 local user = c(username)
 
@@ -121,6 +119,8 @@ estat hettest
 
 regress n w k i.sector, vce(robust)
 
+regress n w k i.sector, robust
+
 *=============================================================================
 /* 								Final Checks 								*/
 *=============================================================================
@@ -128,28 +128,6 @@ regress n w k i.sector, vce(robust)
 coefplot base_model sector_fe sector_interact, drop(_cons) ///
     title("Regression Coefficient Comparison") ///
     xlabel(, grid) legend(label(1 "Base Model") label(2 "Sector FE Model") label(3 "Sector Interact Model"))
-	
-/** Estimate the regression model
-regress n w k, robust
-
-* Generate predicted values
-predict yhat
-
-* Create a scatter plot with a fitted line
-twoway (scatter n yhat, mcolor(blue) msymbol(circle)) ///
-       (lfit n yhat, lcolor(red) lwidth(medium)), ///
-       title("Actual vs. Predicted Employment") ///
-       xtitle("Predicted Employment") ytitle("Actual Employment")*/
-	   
-/** Estimate the regression model
-regress n w k, robust
-
-* Use margins to calculate predicted values at a range of w values
-margins, at(w=(min(w)(.5)max(w)))
-
-* Plot the margins
-marginsplot, title("Predicted Employment by Relative Wage") ///
-    xtitle("Relative Wage (w)") ytitle("Predicted Employment")*/
 
 esttab base_model sector_fe sector_interact using "tables.tex", replace tex ///
     se label title("Employment Regression Results") ///
