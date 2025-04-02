@@ -1,0 +1,54 @@
+---
+title: "Group Assignment ESS, Econometrics 20203, part II"
+author: "Stefano Graziosi"
+---
+
+# Instructions
+
+You are requested to specify, using EViews (or R / Matlab / Python, NOT STATA), an appropriate econometric model for the year on year inflation rate (based on the consumer price index) of a selected country and sample period, to be agreed upon with your TA (Sara Staffolani for class 20 and Martin Fankhauser for class 21). Your groups will be as for the assignment of the first part of the course.
+
+# Data
+
+Each group is responsible for creating their own dataset. We recommend the [International Finance Statistics](https://data.imf.org/?sk=4c514d48-b6ba-49ed-8ab9-52b0c1a0179b) by the International Monetary Fund as a good starting point.
+
+```{r}
+#| label: Loading the dataset
+
+```
+
+```{r}
+#| label: Cleaning the dataset
+
+```
+
+
+# Tasks
+
+After obtaining the relevant data, your tasks include:
+
+## 1. Descriptive Analysis
+
+> Provide a descriptive analysis of the variables.
+
+## 2. Model Specification
+
+> Discuss alternative model specifications.
+
+## 3. Diagnostic Checks
+
+> Run diagnostic checks on your preferred model(s).
+
+## 4. Economic Hypotheses
+
+> Discuss relevant economic hypotheses of interest regarding the model parameters.
+
+## 5. Point Forecast
+
+> Construct and evaluate 1-step ahead point forecasts for the last 10 years of the sample.
+
+## 6. Forecast Comparison
+
+> Compare your forecasts with those resulting from an AR (2) model.
+
+
+
