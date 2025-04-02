@@ -7,12 +7,22 @@ author: "Stefano Graziosi"
 
 You are requested to specify, using EViews (or R / Matlab / Python, NOT STATA), an appropriate econometric model for the year on year inflation rate (based on the consumer price index) of a selected country and sample period, to be agreed upon with your TA (Sara Staffolani for class 20 and Martin Fankhauser for class 21). Your groups will be as for the assignment of the first part of the course.
 
+Summarize your results in a presentation of a maximum of 15 slides.
+
+Please upload the presentation as a PDF file and the EViews workfile (or R/Matlab/Python script) on Blackboard by **11 am on May 27, 2025.**
+
 # Data
 
 Each group is responsible for creating their own dataset. We recommend the [International Finance Statistics](https://data.imf.org/?sk=4c514d48-b6ba-49ed-8ab9-52b0c1a0179b) by the International Monetary Fund as a good starting point.
 
+> **Group 26**: LATVIA
+
 ```{r}
 #| label: Loading the dataset
+
+install.packages("devtools")
+  devtools::install_github("KMueller-Lab/Global-Macro-Database-R")
+
 
 ```
 
@@ -20,7 +30,6 @@ Each group is responsible for creating their own dataset. We recommend the [Inte
 #| label: Cleaning the dataset
 
 ```
-
 
 # Tasks
 
@@ -49,6 +58,3 @@ After obtaining the relevant data, your tasks include:
 ## 6. Forecast Comparison
 
 > Compare your forecasts with those resulting from an AR (2) model.
-
-
-
