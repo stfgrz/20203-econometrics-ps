@@ -3,6 +3,48 @@ title: "Group Assignment ESS, Econometrics 20203, part II"
 author: "Stefano Graziosi"
 ---
 
+```{r echo = "FALSE"}
+#| label: Load the relevant libraries
+
+# Time series
+library(dlm)
+library(TSstudio)
+library(feasts)
+library(tseries)
+  # Necessary packages for quantmod
+  library(zoo)
+  library(xts)
+library(quantmod)
+
+#Specifically for this assignment
+library(glmnet)
+
+# Datasets
+library(readr)
+library(fpp3)
+
+# For fancy plots
+library(ggthemes)
+  # Necessary packages for viridis
+  library(viridisLite)
+library(viridis)
+library(gridExtra)
+library(magrittr)
+library(textab)
+
+# Packages related to tidyverse, for data manipulation
+library(tidyverse) # includes (lubridate), (dplyr), (ggplot2), (tidyr), (tidyselect)
+library(tinytex)
+
+# To handle time changes
+library(timechange)
+
+
+# To solve conflicts
+library(conflicted)
+conflicts_prefer(dplyr::filter)
+```
+
 # Instructions
 
 You are requested to specify, using EViews (or R / Matlab / Python, NOT STATA), an appropriate econometric model for the year on year inflation rate (based on the consumer price index) of a selected country and sample period, to be agreed upon with your TA (Sara Staffolani for class 20 and Martin Fankhauser for class 21). Your groups will be as for the assignment of the first part of the course.
@@ -20,16 +62,54 @@ Each group is responsible for creating their own dataset. We recommend the [Inte
 ```{r}
 #| label: Loading the dataset
 
-install.packages("devtools")
-  devtools::install_github("KMueller-Lab/Global-Macro-Database-R")
-
+data <- read.csv("GMD.csv", header = TRUE)
 
 ```
 
 ```{r}
-#| label: Cleaning the dataset
+#| label: Dataset 1 Preparation: no money supply, no crisis, no rates
 
+latvia_data <- subset(data, countryname == "Latvia")
+
+# Removing the forecasts
+latvia_data_prova1 <- latvia_data[latvia_data$year >= 1995 & latvia_data$year <= 2023, ]
+
+# Remove columns where there's only one unique value
+latvia_data_prova1 <- latvia_data_prova1[, sapply(latvia_data_prova1, function(x) length(unique(x)) > 1)]
+
+write.csv(latvia_data_prova1, file="/Users/stefanograziosi/Documents/GitHub/20203-econometrics-ps/ps2/20203-econometrics-ps2/latvia_data.csv")
+
+# Extracting inflation
+inflation <- latvia_data_prova1$infl
+
+latvia_data_prova1[38:45] <- list(NULL)
+latvia_data_prova1[32] <- list(NULL)
+
+# Create the predictor matrix (removing the intercept column created by model.matrix)
+covariates <- model.matrix(~ . - infl - year, data = latvia_data_prova1)[, -1]
+
+print(dim(covariates))  # should match the number of rows (observations) in latvia_data
+print(length(inflation))  # should be the same as the number of observations
 ```
+
+```{r}
+# Running 10-fold cross-validation for elastic net with alpha = 0.5
+cv_fit <- cv.glmnet(covariates, inflation, alpha = 0.5, nfolds = 10)
+
+# Plot the cross-validation error curve
+plot(cv_fit)
+
+# Extract the best lambda (minimizing cross-validation error)
+best_lambda <- cv_fit$lambda.min
+```
+
+```{r}
+final_model <- glmnet(covariates, inflation, alpha = 0.7, lambda = best_lambda)
+# To view the model coefficients:
+print(coef(final_model))
+```
+
+
 
 # Tasks
 
@@ -42,6 +122,25 @@ After obtaining the relevant data, your tasks include:
 ## 2. Model Specification
 
 > Discuss alternative model specifications.
+
+```{r}
+cv_fit <- cv.glmnet(covariates, inflation, alpha = 0.5, nfolds = 10)
+```
+
+```{r}
+plot(cv_fit)
+```
+
+```{r}
+best_lambda <- cv_fit$lambda.min
+```
+
+```{r}
+final_model <- glmnet(x, y, alpha = 0.5, lambda = best_lambda)
+
+print(coef(final_model))
+```
+
 
 ## 3. Diagnostic Checks
 
