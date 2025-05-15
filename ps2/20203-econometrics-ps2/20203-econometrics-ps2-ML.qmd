@@ -1,6 +1,7 @@
 ---
-title: "Group Assignment ESS, Econometrics 20203, part II"
+title: "20203-econometrics-ps2-ML"
 author: "Stefano Graziosi"
+format: html
 ---
 
 ```{r echo = "FALSE"}
@@ -63,6 +64,50 @@ Each group is responsible for creating their own dataset. We recommend the [Inte
 #| label: Loading the dataset
 
 data <- read.csv("GMD.csv", header = TRUE)
+
+```
+
+```{r}
+#| label: Dataset 1 Preparation: no money supply, no crisis, no rates
+
+latvia_data <- subset(data, countryname == "Latvia")
+
+# Removing the forecasts
+latvia_data_prova1 <- latvia_data[latvia_data$year >= 1995 & latvia_data$year <= 2023, ]
+
+# Remove columns where there's only one unique value
+latvia_data_prova1 <- latvia_data_prova1[, sapply(latvia_data_prova1, function(x) length(unique(x)) > 1)]
+
+write.csv(latvia_data_prova1, file="/Users/stefanograziosi/Documents/GitHub/20203-econometrics-ps/ps2/20203-econometrics-ps2/latvia_data.csv")
+
+# Extracting inflation
+inflation <- latvia_data_prova1$infl
+
+latvia_data_prova1[38:45] <- list(NULL)
+latvia_data_prova1[32] <- list(NULL)
+
+# Create the predictor matrix (removing the intercept column created by model.matrix)
+covariates <- model.matrix(~ . - infl - year, data = latvia_data_prova1)[, -1]
+
+print(dim(covariates))  # should match the number of rows (observations) in latvia_data
+print(length(inflation))  # should be the same as the number of observations
+```
+
+```{r}
+# Running 10-fold cross-validation for elastic net with alpha = 0.5
+cv_fit <- cv.glmnet(covariates, inflation, alpha = 0.5, nfolds = 10)
+
+# Plot the cross-validation error curve
+plot(cv_fit)
+
+# Extract the best lambda (minimizing cross-validation error)
+best_lambda <- cv_fit$lambda.min
+```
+
+```{r}
+final_model <- glmnet(covariates, inflation, alpha = 0.7, lambda = best_lambda)
+# To view the model coefficients:
+print(coef(final_model))
 ```
 
 
@@ -79,19 +124,20 @@ After obtaining the relevant data, your tasks include:
 
 > Discuss alternative model specifications.
 
+```{r}
+cv_fit <- cv.glmnet(covariates, inflation, alpha = 0.5, nfolds = 10)
+```
 
-## 3. Diagnostic Checks
+```{r}
+plot(cv_fit)
+```
 
-> Run diagnostic checks on your preferred model(s).
+```{r}
+best_lambda <- cv_fit$lambda.min
+```
 
-## 4. Economic Hypotheses
+```{r}
+final_model <- glmnet(x, y, alpha = 0.5, lambda = best_lambda)
 
-> Discuss relevant economic hypotheses of interest regarding the model parameters.
-
-## 5. Point Forecast
-
-> Construct and evaluate 1-step ahead point forecasts for the last 10 years of the sample.
-
-## 6. Forecast Comparison
-
-> Compare your forecasts with those resulting from an AR (2) model.
+print(coef(final_model))
+```
