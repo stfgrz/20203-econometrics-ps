@@ -6,6 +6,27 @@ author: "Stefano Graziosi"
 ```{r echo = "FALSE"}
 #| label: Load the relevant libraries
 
+# For descriptive analysis
+library(skimr)
+library(DataExplorer)
+library(psych)
+library(corrplot)
+library(GGally)
+library(patchwork)
+library(scales)
+
+# For model specification
+library(lmtest)
+library(sandwich)
+library(forecast)
+library(dynlm)
+library(urca)
+library(vars)
+library(rugarch)
+
+# For diagnostics
+library(strucchange)
+
 # Time series
 library(dlm)
 library(TSstudio)
@@ -16,8 +37,8 @@ library(tseries)
   library(xts)
 library(quantmod)
 
-#Specifically for this assignment
-library(glmnet)
+# ARDL
+library(ARDL)
 
 # Datasets
 library(readr)
@@ -31,6 +52,7 @@ library(viridis)
 library(gridExtra)
 library(magrittr)
 library(textab)
+library(broom)
 
 # Packages related to tidyverse, for data manipulation
 library(tidyverse) # includes (lubridate), (dplyr), (ggplot2), (tidyr), (tidyselect)
@@ -38,13 +60,14 @@ library(tinytex)
 
 # To handle time changes
 library(timechange)
+```
 
-
+```{r}
 # To solve conflicts
 library(conflicted)
 conflicts_prefer(dplyr::filter)
+conflicts_prefer(dplyr::select)
 ```
-
 # Instructions
 
 You are requested to specify, using EViews (or R / Matlab / Python, NOT STATA), an appropriate econometric model for the year on year inflation rate (based on the consumer price index) of a selected country and sample period, to be agreed upon with your TA (Sara Staffolani for class 20 and Martin Fankhauser for class 21). Your groups will be as for the assignment of the first part of the course.
@@ -60,11 +83,38 @@ Each group is responsible for creating their own dataset. We recommend the [Inte
 > **Group 26**: LATVIA
 
 ```{r}
-#| label: Loading the dataset
-
-data <- read.csv("GMD.csv", header = TRUE)
+latvia <- readr::read_csv("~/Documents/GitHub/20203-econometrics-ps/ps2/data/20203-dataset-final.csv", col_types = cols())
 ```
 
+```{r}
+dim(latvia)           # rows & cols
+str(latvia)           # data types
+skim(latvia)          # extended summary of each variable
+```
+```{r}
+gdp_vars       <- c("nGDP","rGDP","rGDP_pc","rGDP_USD","deflator")
+cons_inv_vars  <- c("cons","rcons","cons_GDP","inv","inv_GDP","finv","finv_GDP")
+bp_vars        <- c("exports","exports_GDP","imports","imports_GDP","CA","CA_GDP","USDfx","REER")
+gov_vars       <- c("govexp","govexp_GDP","govrev","govrev_GDP",
+                    "govtax","govtax_GDP","govdef","govdef_GDP","govdebt","govdebt_GDP")
+bc_vars        <- c("HPI","CPI","infl","unemp")
+mon_vars       <- c("strate","ltrate","cbrate","M0","M1","M2")
+```
+
+
+
+```{r}
+#| label: Missingness diagnostics
+
+# Overall missing value counts
+latvia %>% 
+  summarise_all(~ sum(is.na(.))) %>% 
+  pivot_longer(everything(), names_to="variable", values_to="n_missing") %>% 
+  arrange(desc(n_missing))
+
+# Visualize missingness
+DataExplorer::plot_missing(latvia)
+```
 
 
 # Tasks
@@ -75,14 +125,378 @@ After obtaining the relevant data, your tasks include:
 
 > Provide a descriptive analysis of the variables.
 
+```{r}
+#| label: Numeric variables: summaries & distributions
+
+# Identify numeric columns
+num_vars <- latvia %>% dplyr::select(where(is.numeric)) %>% names()
+
+# Descriptive statistics (mean, sd, skew, kurtosis, etc.)
+psych::describe(latvia[num_vars])
+
+# Histograms + density plots
+DataExplorer::plot_histogram(latvia[num_vars])
+DataExplorer::plot_density(latvia[num_vars])
+
+# Boxplots for outlier detection
+# -> produce one combined figure faceted by variable
+latvia %>% 
+  pivot_longer(all_of(num_vars), names_to="variable", values_to="value") %>% 
+  ggplot(aes(x=variable, y=value)) +
+  geom_boxplot(outlier.colour="firebrick") +
+  theme_bw() +
+  coord_flip() +
+  labs(title="Boxplots of Numeric Variables")
+```
+
+```{r}
+#| label: A helper to build a faceted time‐series plot for any named vector
+
+plot_time_facet <- function(df, vars, title, ncol = 2) {
+  df %>%
+    select(year, all_of(vars)) %>%
+    pivot_longer(-year, names_to = "variable", values_to = "value") %>%
+    ggplot(aes(x = year, y = value)) +
+      geom_line(color = "#1f78b4", linewidth = 1) +
+      facet_wrap(~ variable, scales = "free_y", ncol = ncol) +
+      labs(title = title,
+           x     = "Year",
+           y     = NULL) +
+      theme_minimal(base_size = 12) +
+      theme(
+        plot.title       = element_text(face = "bold", size = 14, hjust = 0.5),
+        strip.text       = element_text(face = "bold"),
+        panel.grid.minor = element_blank()
+      )
+}
+
+```
+
+```{r}
+p_gdp      <- plot_time_facet(latvia, gdp_vars,      "GDP Measures")
+p_cons_inv <- plot_time_facet(latvia, cons_inv_vars, "Consumption & Investment")
+p_bp       <- plot_time_facet(latvia, bp_vars,       "Balance of Payments")
+p_gov      <- plot_time_facet(latvia, gov_vars,      "Government Intervention")
+p_bc       <- plot_time_facet(latvia, bc_vars,       "Business Cycle Indicators")
+p_mon      <- plot_time_facet(latvia, mon_vars,      "Monetary Measures")
+```
+
+```{r}
+print(p_gdp)
+```
+
+```{r}
+print(p_cons_inv)
+```
+
+```{r}
+
+```
+
+```{r}
+print(p_bp)
+```
+
+```{r}
+print(p_gov)
+```
+
+```{r}
+print(p_bc)
+```
+
+```{r}
+print(p_mon)
+```
+
 ## 2. Model Specification
 
 > Discuss alternative model specifications.
 
+### 2.1. Static Linear Regression (LRM)
+
+**Idea:**
+
+```{r}
+# assume latvia is your data.frame and already loaded
+# build a “general‐to‐specific” starting model
+model_lrm <- lm(infl ~ rGDP_pc + M2 + unemp + USDfx, data=latvia)
+
+# summary & robust SEs
+coeftest(model_lrm, vcov = vcovHC(model_lrm, type="HC1"))
+bptest(model_lrm)        # test heteroskedasticity :contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3}
+dwtest(model_lrm)        # Durbin–Watson for serial correlation
+```
+
+### 2.2. Univariate Autoregression (AR) / ARIMA
+
+**Idea:** Inflation often exhibits persistence; model it purely as its own lag(s) 
+
+### 2.2.a. AR(1)
+
+```{r}
+# convert to ts
+infl_ts <- ts(latvia$infl, start=2001, frequency=1)
+
+# automatic ARIMA selection (here d=0 since we model year-on-year rate)
+auto_fit <- auto.arima(infl_ts, max.p=4, max.q=0, seasonal=TRUE) # There is room to play around with command specifications
+summary(auto_fit)
+
+checkresiduals(auto_fit)
+```
+### 2.2.b. AR(2)
+
+```{r}
+# convert to ts
+infl_ts <- ts(latvia$infl, start=2001, frequency=1)
+
+# automatic ARIMA selection (here d=0 since we model year-on-year rate)
+auto_fit <- auto.arima(infl_ts, max.p=4, max.q=0, seasonal=TRUE) # There is room to play around with command specifications
+summary(auto_fit)
+
+checkresiduals(auto_fit)
+```
+
+
+### 2.3. ARDL(p,q) – Autoregressive Distributed Lags
+
+**Idea:** Inflation depends on its own lags and lagged covariates (e.g. lagged money growth, lagged output gap) .
+
+```{r}
+# form time series ts object for all vars
+lat_ts <- ts(dplyr::select(latvia, infl, rGDP_pc, M2, unemp, cbrate), start=2001, frequency=1)
+
+# ARDL(1,1) example: infl_t ~ infl_{t-1} + ΔM2_t + M2_{t-1}
+model_ardl <- dynlm(infl ~ L(infl,1) + diff(M2) + L(M2,1), data=lat_ts)
+summary(model_ardl)
+```
+
+### 2.4. Error-Correction Model (ECM)
+
+**Idea:** If inflation and a driver (e.g. money growth or output gap) are cointegrated, model ∆infl as a function of ∆X and the lagged equilibrium error 
+
+```{r}
+# 1) test for cointegration between levels of infl and M2
+coint_test <- ca.jo(ts.union(infl_ts, ts(latvia$M2, start=2001)), type="trace", K=2)
+summary(coint_test)
+
+# 2) if cointegrated, extract the long-run residual
+beta_hat <- coint_test@V[,1]       # normalized cointegration vector
+ec_term   <- ts(cbind(infl_ts, ts(latvia$M2,2001))[ ,1:2] %*% beta_hat, start=2001)
+
+# 3) ECM: Δinfl ~ ΔM2 + lag(ec_term)
+ecm <- dynlm(d(infl) ~ d(M2) + L(ec_term,1), data=lat_ts)
+summary(ecm)
+```
+
+### 2.5. Vector Autoregression (VAR)
+
+**Idea:** Treat inflation and its key drivers as jointly endogenous—forecasting via a small system
+
+```{r}
+# select variables
+var_data <- ts(
+  latvia[, c("infl", "rGDP_pc", "M2")], 
+  start     = 2001, 
+  frequency = 1
+)
+
+# Now select lags and fit:
+lag_sel   <- VARselect(var_data, lag.max = 4, type = "const")
+p         <- lag_sel$selection["AIC(n)"]
+var_model <- vars::VAR(var_data, p = p, type = "const")
+summary(var_model)
+
+# impulse responses
+irf(var_model, impulse="M2", response="infl", n.ahead=8) %>% plot()
+```
+
+### 2.6. ARIMA–GARCH
+
+**Note:** this is an absolute overkill and I personally advise against using it, it comes from another course and I'm still not sure I can make sense of it.
+
+**Idea:** Inflation shocks may cluster in volatility—model residual variance via GARCH.
+
+```{r}
+# specify an ARIMA(1,0,0)+GARCH(1,1)
+spec <- ugarchspec(
+  mean.model = list(armaOrder = c(1,0)),
+  variance.model = list(model="sGARCH", garchOrder=c(1,1)),
+  distribution.model = "std"
+)
+
+fit <- ugarchfit(spec, infl_ts)
+show(fit)
+plot(fit, which="all")
+```
 
 ## 3. Diagnostic Checks
 
 > Run diagnostic checks on your preferred model(s).
+
+### 3.1 Static Linear Model
+
+```{r}
+lrm_aic   <- AIC(model_lrm)
+lrm_bic   <- BIC(model_lrm)
+lrm_rmse  <- sqrt(mean(resid(model_lrm)^2))
+lrm_dw    <- dwtest(model_lrm)$statistic
+lrm_bp_p  <- bptest(model_lrm)$p.value
+```
+
+### 3.2. Univariate Autoregression (AR) / ARIMA
+
+```{r}
+arima_aic  <- AIC(auto_fit)
+arima_bic  <- BIC(auto_fit)
+arima_acc  <- accuracy(auto_fit)    # training‐set ME, RMSE, MAE…
+arima_rmse <- arima_acc["Training set", "RMSE"]
+arima_lb   <- Box.test(residuals(auto_fit), lag=5, type="Ljung")$p.value
+```
+
+### 3.3. ARDL(p,q) – Autoregressive Distributed Lags
+
+```{r}
+ardl_aic   <- AIC(model_ardl)
+ardl_bic   <- BIC(model_ardl)
+ardl_rmse  <- sqrt(mean(resid(model_ardl)^2))
+```
+
+### 3.4. Error-Correction Model (ECM)
+
+```{r}
+ecm_aic    <- AIC(ecm)
+ecm_bic    <- BIC(ecm)
+ecm_rmse   <- sqrt(mean(resid(ecm)^2))
+```
+
+### 3.5. Vector Autoregression (VAR)
+
+```{r}
+var_aic    <- AIC(var_model)
+var_bic    <- BIC(var_model)
+
+# extract inflation equation residuals
+infl_resid <- residuals(var_model)[, "infl"]
+var_rmse   <- sqrt(mean(infl_resid^2))
+
+# stability: largest root must be < 1
+stabs     <- max(Mod(polyroot(c(1, -VARselect(var_data,4)$selection["AIC(n)"]))))
+```
+
+### 3.6. ARIMA–GARCH
+
+**Note:** as I was saying before, I don't really know what to do with this. On the upside, all of the statistics and visualisations useful to determine the feaasibility and reliability of this model can be found above in 2.6.
+
+```{r}
+
+```
+
+```{r}
+results <- tibble::tibble(
+  Model   = c("OLS-LRM","ARIMA(1,0,0)","ARDL(1,1)","ECM","VAR(4)"),
+  AIC     = c(lrm_aic, arima_aic, ardl_aic, ecm_aic, var_aic),
+  BIC     = c(lrm_bic, arima_bic, ardl_bic, ecm_bic, var_bic),
+  RMSE    = c(lrm_rmse, arima_rmse, ardl_rmse, ecm_rmse, var_rmse),
+  `No AC?` = c(lrm_dw>1.75, arima_lb>0.05, NA, NA, NA),
+  Notes   = c(
+    ifelse(lrm_bp_p>0.05,"H-V OK","H-V heterosked") %>% paste0("; DW=", round(lrm_dw,2)),
+    ifelse(arima_lb>0.05,"no autocorr.","autocorr."),
+    paste0("R²=", round(summary(model_ardl)$r.squared,2)),
+    paste0("EC term p=", round(coef(summary(ecm))["L(ec_term, 1)","Pr(>|t|)"],3)),
+    paste0("max root=", round(stabs,3))
+  )
+)
+print(results)
+```
+
+## 3.7 Breakpoint Analysis
+
+## 3.8 Chow Tests
+
+```{r}
+# specify formula and data
+form <- infl ~ rGDP_pc + M2 + unemp + USDfx
+latvia_small <- latvia %>% 
+  select(year, infl, rGDP_pc, M2, unemp, USDfx)
+
+# Estimate breakpoints (allowing up to 5 candidate breaks; here we’ll pick 1)
+#    h = minimal segment size (here 0.15*T ≈ 3 obs per regime)
+bp <- breakpoints(form, data = latvia_small, h = 0.25)
+
+# Inspect the BIC‐optimal number of breaks
+#    (summary(bp) will show you RSS, BIC for m = 0,1,2,…)
+summary(bp)
+
+# Extract the single best break (m = 1)
+bp1 <- breakpoints(bp, breaks = 1)
+bp1
+
+# Translate that into a calendar year
+#    `bp1$breakpoints` gives the OBS row number of the break:
+obs_break <- bp1$breakpoints[1]
+year_break <- latvia_small$year[obs_break]
+cat("Estimated break year:", year_break, "\n")
+
+# Plot the supF statistic over time
+plot(bp, breaks=1)
+lines(bp1)
+
+# Now you can plug `year_break` into your CH1–CH4 code:
+break_year <- year_break
+```
+
+```{r}
+lat1 <- filter(latvia_small, year <= break_year)
+lat2 <- filter(latvia_small, year >  break_year)
+T1   <- nrow(lat1);  T2 <- nrow(lat2)
+
+#–– 1) Fit full‐sample and subsample OLS ––#
+mod_full <- lm(form, data=latvia_small)
+RSS_full <- sum(resid(mod_full)^2)
+
+mod1 <- lm(form, data=lat1)
+RSS1 <- sum(resid(mod1)^2)
+
+# set the number of parameters (look at `form` in the chunk above)
+
+k <- 4
+
+# need special handling if T2 > k:
+if(T2 > k) {
+  mod2 <- lm(form, data=lat2)
+  RSS2 <- sum(resid(mod2)^2)
+  
+  # CH1: breakpoint test for β1=β2  :contentReference[oaicite:1]{index=1}:contentReference[oaicite:2]{index=2}
+  CH1_stat <- ((RSS_full - RSS1 - RSS2)/k) / ((RSS1 + RSS2)/(T - 2*k))
+  CH1_p    <- 1 - pf(CH1_stat, df1 = k, df2 = T - 2*k)
+  
+  # CH2: variance–stability σ1²=σ2²  :contentReference[oaicite:3]{index=3}:contentReference[oaicite:4]{index=4}
+  CH2_stat <- (RSS2/(T2 - k)) / (RSS1/(T1 - k))
+  CH2_p    <- 1 - pf(CH2_stat, df1 = T2 - k, df2 = T1 - k)
+}
+
+# CH3 & CH4: “forecast”‐style tests if T2 may be small (or always doable) :contentReference[oaicite:5]{index=5}:contentReference[oaicite:6]{index=6}
+# CH3: parameter‐stability via predictive errors
+e2 <- lat2$infl - predict(mod1, newdata = lat2)
+CH3_stat <- ((RSS_full - RSS1)/RSS1) * ((T1 - k)/T2)
+CH3_p    <- 1 - pf(CH3_stat, df1 = T2, df2 = T1 - k)
+
+# CH4: variance‐instability via χ² of forecast errors
+sigma1_hat <- RSS1/(T1 - k)
+CH4_stat    <- sum(e2^2) / sigma1_hat
+CH4_p       <- 1 - pchisq(CH4_stat, df = T2)
+
+#–– 2) Display results ––#
+tests <- tibble(
+  Test      = c("CH1 (β-break)", "CH2 (σ² stability)", 
+                "CH3 (forecast β‐stability)", "CH4 (forecast σ²)"),
+  Statistic = c(CH1_stat, CH2_stat, CH3_stat, CH4_stat),
+  `p‐value` = c(CH1_p,    CH2_p,    CH3_p,    CH4_p)
+)
+print(tests)
+```
+
 
 ## 4. Economic Hypotheses
 
