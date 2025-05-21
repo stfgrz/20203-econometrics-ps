@@ -1,6 +1,6 @@
 ---
 title: "Group Assignment ESS, Econometrics 20203, part II"
-author: "Stefano Graziosi"
+author: "Sofia Pisu, Stefano Graziosi"
 ---
 
 ```{r echo = "FALSE"}
@@ -23,6 +23,7 @@ library(dynlm)
 library(urca)
 library(vars)
 library(rugarch)
+library(car)
 
 # For diagnostics
 library(strucchange)
@@ -91,6 +92,7 @@ dim(latvia)           # rows & cols
 str(latvia)           # data types
 skim(latvia)          # extended summary of each variable
 ```
+
 ```{r}
 gdp_vars       <- c("nGDP","rGDP","rGDP_pc","rGDP_USD","deflator")
 cons_inv_vars  <- c("cons","rcons","cons_GDP","inv","inv_GDP","finv","finv_GDP")
@@ -115,8 +117,6 @@ latvia %>%
 # Visualize missingness
 DataExplorer::plot_missing(latvia)
 ```
-
-
 # Tasks
 
 After obtaining the relevant data, your tasks include:
@@ -337,62 +337,65 @@ plot(fit, which="all")
 ### 3.1 Static Linear Model
 
 ```{r}
-lrm_aic   <- AIC(model_lrm)
-lrm_bic   <- BIC(model_lrm)
-lrm_rmse  <- sqrt(mean(resid(model_lrm)^2))
-lrm_dw    <- dwtest(model_lrm)$statistic
-lrm_bp_p  <- bptest(model_lrm)$p.value
+aic_lrm   <- AIC(model_lrm)
+bic_lrm   <- BIC(model_lrm)
+rmse_lrm  <- sqrt(mean(resid(model_lrm)^2))
+dw_lrm    <- dwtest(model_lrm)$statistic
+bp_p_lrm  <- bptest(model_lrm)$p.value
+jb_lrm    <- jarque.bera.test(resid(model_lrm))
+vif_lrm   <- vif(model_lrm)
 ```
 
 ### 3.2. Univariate Autoregression (AR) / ARIMA
 
 ```{r}
-arima_aic  <- AIC(auto_fit)
-arima_bic  <- BIC(auto_fit)
-arima_acc  <- accuracy(auto_fit)    # training‐set ME, RMSE, MAE…
-arima_rmse <- arima_acc["Training set", "RMSE"]
-arima_lb   <- Box.test(residuals(auto_fit), lag=5, type="Ljung")$p.value
+aic_arima   <- AIC(auto_fit_ar1)
+bic_arima   <- BIC(auto_fit_ar1)
+arima_acc   <- accuracy(auto_fit_ar1)
+rmse_arima  <- arima_acc["Training set", "RMSE"]
+lb_p_arima  <- Box.test(residuals(auto_fit_ar1), lag = 5, type = "Ljung")$p.value
+jb_arima    <- jarque.bera.test(resid(auto_fit_ar1))
 ```
 
 ### 3.3. ARDL(p,q) – Autoregressive Distributed Lags
 
 ```{r}
-ardl_aic   <- AIC(model_ardl)
-ardl_bic   <- BIC(model_ardl)
-ardl_rmse  <- sqrt(mean(resid(model_ardl)^2))
+aic_ardl  <- AIC(model_ardl)
+bic_ardl  <- BIC(model_ardl)
+rmse_ardl <- sqrt(mean(resid(model_ardl)^2))
+jb_lrm    <- jarque.bera.test(resid(model_ardl))
+vif_lrm   <- vif(model_ardl)
 ```
 
 ### 3.4. Error-Correction Model (ECM)
 
 ```{r}
-ecm_aic    <- AIC(ecm)
-ecm_bic    <- BIC(ecm)
-ecm_rmse   <- sqrt(mean(resid(ecm)^2))
+aic_ecm   <- AIC(ecm)
+bic_ecm   <- BIC(ecm)
+rmse_ecm  <- sqrt(mean(resid(ecm)^2))
+jb_lrm    <- jarque.bera.test(resid(ecm))
+vif_lrm   <- vif(ecm)
 ```
 
 ### 3.5. Vector Autoregression (VAR)
 
 ```{r}
-var_aic    <- AIC(var_model)
-var_bic    <- BIC(var_model)
-
-# extract inflation equation residuals
+aic_var    <- AIC(var_model)
+bic_var    <- BIC(var_model)
 infl_resid <- residuals(var_model)[, "infl"]
-var_rmse   <- sqrt(mean(infl_resid^2))
-
-# stability: largest root must be < 1
-stabs     <- max(Mod(polyroot(c(1, -VARselect(var_data,4)$selection["AIC(n)"]))))
+rmse_var   <- sqrt(mean(infl_resid^2))
+stabs      <- max(Mod(polyroot(c(1, -lag_sel$selection["AIC(n)"]))))
 ```
 
 ### 3.6. ARIMA–GARCH
 
 **Note:** as I was saying before, I don't really know what to do with this. On the upside, all of the statistics and visualisations useful to determine the feaasibility and reliability of this model can be found above in 2.6.
 
-```{r}
-
-```
 
 ```{r}
+#| label: Ste's table (NO NOT RUN)
+#| eval: false
+#| include: false
 results <- tibble::tibble(
   Model   = c("OLS-LRM","ARIMA(1,0,0)","ARDL(1,1)","ECM","VAR(4)"),
   AIC     = c(lrm_aic, arima_aic, ardl_aic, ecm_aic, var_aic),
@@ -408,6 +411,35 @@ results <- tibble::tibble(
   )
 )
 print(results)
+```
+
+```{r}
+summary_results <- tibble(
+  Model                 = c("OLS-LRM", "ARIMA(1,0,0)", "ARDL(1,1)", "ECM", "VAR"),
+  AIC                   = c(aic_lrm, aic_arima, aic_ardl, aic_ecm, aic_var),
+  BIC                   = c(bic_lrm, bic_arima, bic_ardl, bic_ecm, bic_var),
+  RMSE                  = c(rmse_lrm, rmse_arima, rmse_ardl, rmse_ecm, rmse_var),
+  `Durbin-Watson`       = c(dw_lrm, NA, NA, NA, NA),
+  `BP p-value`          = c(bp_p_lrm, NA, NA, NA, NA),
+  `JB p-value`          = c(
+    jb_lrm$p.value,
+    jb_arima$p.value,
+    jarque.bera.test(resid(model_ardl))$p.value,
+    jarque.bera.test(resid(ecm))$p.value,
+    NA
+  ),
+  `VIF max`             = c(
+    max(vif(model_lrm)),
+    NA,
+    max(vif(model_ardl)),
+    max(vif(ecm)),
+    NA
+  ),
+  `Ljung-Box p-value`   = c(NA, lb_p_arima, NA, NA, NA),
+  `Max root modulus`    = c(NA, NA, NA, NA, stabs)
+)
+
+kable(summary_results, digits = 3, caption = "Diagnostic Summary for Selected Models")
 ```
 
 ## 3.7 Breakpoint Analysis
