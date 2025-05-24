@@ -23,10 +23,11 @@ library(dynlm)
 library(urca)
 library(vars)
 library(rugarch)
-library(car)
 
 # For diagnostics
 library(strucchange)
+library(slider)
+library(car)
 
 # Time series
 library(dlm)
@@ -54,6 +55,8 @@ library(gridExtra)
 library(magrittr)
 library(textab)
 library(broom)
+library(tibble)
+library(knitr)
 
 # Packages related to tidyverse, for data manipulation
 library(tidyverse) # includes (lubridate), (dplyr), (ggplot2), (tidyr), (tidyselect)
@@ -68,6 +71,8 @@ library(timechange)
 library(conflicted)
 conflicts_prefer(dplyr::filter)
 conflicts_prefer(dplyr::select)
+conflicts_prefer(scales::alpha)
+conflicts_prefer(vars::VAR)
 ```
 # Instructions
 
@@ -296,14 +301,17 @@ summary(ecm)
 ```{r}
 # select variables
 var_data <- ts(
-  latvia[, c("infl", "rGDP_pc", "M2")], 
+  latvia[, c("infl", "rGDP_pc", "M2", "USDfx", "unemp")], 
   start     = 2001, 
   frequency = 1
 )
 
 # Now select lags and fit:
 lag_sel   <- VARselect(var_data, lag.max = 4, type = "const")
-p         <- lag_sel$selection["AIC(n)"]
+p_aic     <- lag_sel$selection["AIC(n)"]
+p_bic   <- lag_sel$selection["SC(n)"]
+p <- min(p_aic, p_bic, 2)  
+
 var_model <- vars::VAR(var_data, p = p, type = "const")
 summary(var_model)
 
@@ -349,12 +357,12 @@ vif_lrm   <- vif(model_lrm)
 ### 3.2. Univariate Autoregression (AR) / ARIMA
 
 ```{r}
-aic_arima   <- AIC(auto_fit_ar1)
-bic_arima   <- BIC(auto_fit_ar1)
-arima_acc   <- accuracy(auto_fit_ar1)
+aic_arima   <- AIC(auto_fit)
+bic_arima   <- BIC(auto_fit)
+arima_acc   <- accuracy(auto_fit)
 rmse_arima  <- arima_acc["Training set", "RMSE"]
-lb_p_arima  <- Box.test(residuals(auto_fit_ar1), lag = 5, type = "Ljung")$p.value
-jb_arima    <- jarque.bera.test(resid(auto_fit_ar1))
+lb_p_arima  <- Box.test(residuals(auto_fit), lag = 5, type = "Ljung")$p.value
+jb_arima    <- jarque.bera.test(resid(auto_fit))
 ```
 
 ### 3.3. ARDL(p,q) – Autoregressive Distributed Lags
@@ -394,8 +402,7 @@ stabs      <- max(Mod(polyroot(c(1, -lag_sel$selection["AIC(n)"]))))
 
 ```{r}
 #| label: Ste's table (NO NOT RUN)
-#| eval: false
-#| include: false
+
 results <- tibble::tibble(
   Model   = c("OLS-LRM","ARIMA(1,0,0)","ARDL(1,1)","ECM","VAR(4)"),
   AIC     = c(lrm_aic, arima_aic, ardl_aic, ecm_aic, var_aic),
@@ -538,6 +545,277 @@ print(tests)
 
 > Construct and evaluate 1-step ahead point forecasts for the last 10 years of the sample.
 
+```{r}
+T_total      <- nrow(var_data)
+n_forecasts  <- 10
+start_roll   <- T_total - n_forecasts
+
+years        <- time(var_data)[(start_roll+1):T_total]
+fc_infl      <- lower <- upper <- numeric(n_forecasts)
+
+for(i in seq_len(n_forecasts)) {
+  end_train <- start_roll + (i - 1)
+  train_ts  <- window(var_data, end = time(var_data)[end_train])
+  
+  sel       <- VARselect(train_ts, lag.max = 4, type = "const")$selection
+  p         <- min(sel["AIC(n)"], sel["SC(n)"], 2)
+  vfit      <- vars::VAR(train_ts, p = p, type = "const")
+  
+  pr        <- predict(vfit, n.ahead = 1)
+  fc_infl[i] <- pr$fcst$infl[1, "fcst"]
+  lower[i]   <- pr$fcst$infl[1, "lower"]
+  upper[i]   <- pr$fcst$infl[1, "upper"]
+}
+```
+
+```{r}
+# actual infl over the same 10 years
+act_infl <- window(var_data[,"infl"], start = time(var_data)[start_roll+1])
+
+# bind into tibble and compute errors
+results_var <- tibble(
+  year     = as.integer(years),
+  actual   = as.numeric(act_infl),
+  forecast = fc_infl,
+  lower    = lower,
+  upper    = upper,
+  error    = forecast - actual
+)
+```
+
+```{r}
+# accuracy metrics
+accuracy_var <- results_var %>%
+  summarise(
+    RMSE = sqrt(mean(error^2)),
+    MAE  = mean(abs(error)),
+    MAPE = mean(abs(error/actual)) * 100
+  )
+
+# print tables
+print(results_var)
+print(accuracy_var)
+```
+
+
+```{r}
+#| fig-width: 10      # width in inches
+#| fig-height: 6     # height in inches
+#| fig-dpi: 300      # resolution
+#| fig-align: center # (optional) center the figure
+
+var_forecast <- ggplot(results_var, aes(x = year)) +
+  # Ribbon for 95% CI
+  geom_ribbon(aes(ymin = lower, ymax = upper, fill = "95% CI"),
+              alpha = 0.2) +
+  # Actual vs. forecast lines
+  geom_line(aes(y = actual, color = "Actual"),   linewidth = 1.2) +
+  geom_line(aes(y = forecast, color = "Forecast"), linewidth = 1.2) +
+  
+  # Keep your custom colours
+  scale_color_manual(name  = NULL,
+                     values = c("Actual"   = "steelblue",
+                                "Forecast" = "firebrick")) +
+  scale_fill_manual(name  = NULL,
+                    values = c("95% CI"   = "firebrick")) +
+  
+  # Axis scales
+  scale_x_continuous(breaks = results_var$year,
+                     labels = results_var$year,
+                     expand = expansion(mult = 0.02)) +
+  scale_y_continuous(labels = label_number(accuracy = 0.1, suffix = "%"),
+                     expand = expansion(mult = 0.02)) +
+  
+  # Labels
+  labs(
+    title    = "VAR One-Step-Ahead Inflation Forecasts for Latvia",
+    subtitle = "Last 10 years — 95% confidence interval shaded",
+    x        = "Year",
+    y        = "Inflation Rate (%)"
+  ) +
+  
+  # Publication-style theme
+  theme_bw(base_size = 14) +
+  theme(
+    # Title styling
+    plot.title.position = "plot",
+    plot.title          = element_text(face = "bold", size = 16),
+    plot.subtitle       = element_text(size = 12, margin = margin(b = 10)),
+    
+    # Axis titles & text
+    axis.title          = element_text(face = "bold"),
+    axis.text           = element_text(color = "gray30"),
+    
+    # Gridlines
+    panel.grid.major    = element_line(color = "gray85", size = 0.4),
+    panel.grid.minor    = element_blank(),
+    panel.border        = element_rect(color = "gray70", fill = NA, size = 0.5),
+    
+    # Legend
+    legend.position     = c(0.85, 0.15),
+    legend.background   = element_rect(fill = alpha("white", 0.7), color = NA),
+    legend.key.width    = unit(1.2, "lines"),
+    legend.text         = element_text(size = 11),
+    
+    # Plot margins
+    plot.margin         = margin(t = 10, r = 15, b = 10, l = 10)
+  )
+
+print(var_forecast)
+```
+
+
 ## 6. Forecast Comparison
 
 > Compare your forecasts with those resulting from an AR (2) model.
+
+```{r}
+#| label: Prepare the inflation series
+infl_ts     <- ts(var_data[,"infl"], start = start(var_data)[1], frequency = 1)
+T_total     <- length(infl_ts)
+n_forecasts <- 10
+start_roll  <- T_total - n_forecasts
+```
+
+```{r}
+#| label: Rolling one-step AR(2) forecasts
+ar2_fc    <- ar2_lower <- ar2_upper <- numeric(n_forecasts)
+
+for(i in seq_len(n_forecasts)) {
+  end_train   <- start_roll + (i - 1)
+  train_series<- window(infl_ts, end = time(infl_ts)[end_train])
+  
+  # fit ARIMA(2,0,0) ≡ AR(2)
+  fit_ar2     <- Arima(train_series, order = c(2,0,0), include.constant = TRUE)
+  fcast       <- forecast(fit_ar2, h = 1, level = 95)
+  
+  ar2_fc[i]      <- as.numeric(fcast$mean)
+  ar2_lower[i]   <- as.numeric(fcast$lower)
+  ar2_upper[i]   <- as.numeric(fcast$upper)
+}
+```
+
+```{r}
+#| label: Actual values for hold-out
+actuals    <- window(infl_ts, start = time(infl_ts)[start_roll + 1])
+```
+
+```{r}
+#| label: Build a tibble of AR(2) results
+results_ar2 <- tibble(
+  year      = as.integer(time(actuals)),
+  actual    = as.numeric(actuals),
+  ar2_fc    = ar2_fc,
+  ar2_lower = ar2_lower,
+  ar2_upper = ar2_upper
+) %>%
+  mutate(ar2_error = ar2_fc - actual)
+```
+
+```{r}
+#| label: Compute accuracy metrics
+acc_var <- results_var %>%
+  summarise(
+    RMSE_VAR  = sqrt(mean(error^2)),
+    MAE_VAR   = mean(abs(error)),
+    MAPE_VAR  = mean(abs(error/actual)) * 100
+  )
+
+acc_ar2 <- results_ar2 %>%
+  summarise(
+    RMSE_AR2  = sqrt(mean(ar2_error^2)),
+    MAE_AR2   = mean(abs(ar2_error)),
+    MAPE_AR2  = mean(abs(ar2_error/actual)) * 100
+  )
+
+accuracy_compare <- bind_cols(acc_var, acc_ar2)
+print(accuracy_compare)
+```
+
+```{r}
+#| label: plot actual vs both forecasts with CIs
+#| fig-width: 10      # width in inches
+#| fig-height: 6     # height in inches
+#| fig-dpi: 300      # resolution
+#| fig-align: center # (optional) center the figure
+
+ggplot() +
+  # Actual, VAR & AR2 ribbons
+  geom_ribbon(data = results_var,
+              aes(x = year, ymin = lower, ymax = upper, fill = "VAR 95% CI"),
+              alpha = 0.2) +
+  geom_ribbon(data = results_ar2,
+              aes(x = year, ymin = ar2_lower, ymax = ar2_upper, fill = "AR(2) 95% CI"),
+              alpha = 0.2) +
+  
+  # Lines: actual, VAR forecast, AR2 forecast
+  geom_line(data = results_ar2,
+            aes(x = year, y = actual,   color = "Actual"),   size = 1.2) +
+  geom_line(data = results_var,
+            aes(x = year, y = forecast, color = "VAR"),      size = 1.1) +
+  geom_line(data = results_ar2,
+            aes(x = year, y = ar2_fc,   color = "AR(2)"),    linetype = "dashed", size = 1.1) +
+  
+  # Colour & fill scales
+  scale_color_manual(name   = NULL,
+                     values = c("Actual" = "steelblue",
+                                "VAR"    = "firebrick",
+                                "AR(2)"  = "darkgreen")) +
+  scale_fill_manual(name   = NULL,
+                    values = c("VAR 95% CI"   = "firebrick",
+                               "AR(2) 95% CI" = "darkgreen")) +
+  
+  # Axes
+  scale_x_continuous(breaks = results_var$year,
+                     expand = expansion(mult = 0.02)) +
+  scale_y_continuous(labels = label_number(accuracy = 0.1, suffix = "%"),
+                     expand = expansion(mult = 0.02)) +
+  
+  # Labels
+  labs(
+    title    = "Actual vs. VAR and AR(2) One-Step-Ahead Forecasts",
+    subtitle = "Last 10 years — 95% confidence intervals shaded",
+    x        = "Year",
+    y        = "Inflation Rate (%)"
+  ) +
+  
+  # Theme
+  theme_bw(base_size = 14) +
+  theme(
+    # Titles
+    plot.title.position = "plot",
+    plot.title          = element_text(face = "bold", size = 16),
+    plot.subtitle       = element_text(size = 12, margin = margin(b = 8)),
+    
+    # Axis
+    axis.title          = element_text(face = "bold"),
+    axis.text           = element_text(color = "gray30"),
+    
+    # Grid & border
+    panel.grid.major    = element_line(color = "gray85", size = 0.4),
+    panel.grid.minor    = element_blank(),
+    panel.border        = element_rect(color = "gray70", fill = NA, size = 0.5),
+    
+    # Legend
+    legend.position     = c(0.80, 0.15),
+    legend.background   = element_rect(fill = alpha("white", 0.7), color = NA),
+    legend.key.width    = unit(1.2, "lines"),
+    legend.text         = element_text(size = 11),
+    
+    # Margins
+    plot.margin         = margin(t = 10, r = 15, b = 10, l = 10)
+  )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
