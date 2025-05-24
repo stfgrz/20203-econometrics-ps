@@ -218,6 +218,77 @@ print(p_mon)
 
 > Discuss alternative model specifications.
 
+### 2.0 Preliminary Analysis
+
+#### a. Stationariety
+
+```{r}
+#| label: stationarity-tests
+#| echo: TRUE
+#| message: FALSE
+#| warning: FALSE
+
+library(purrr)
+library(tibble)
+library(knitr)
+
+vars_to_test <- c("infl", "rGDP_pc", "M2", "unemp", "USDfx")
+
+stationarity_results <- map_dfr(vars_to_test, function(v) {
+  ts_v <- ts(latvia[[v]], start = min(latvia$year), frequency = 1)
+
+  # run the tests
+  adf  <- ur.df(ts_v,  type = "trend",    selectlags = "AIC")
+  pp   <- ur.pp(ts_v,  type = "Z-alpha",  model      = "trend", lags = "short")
+  kpss <- ur.kpss(ts_v,type = "mu",       lags       = "short")
+  ers  <- ur.ers(ts_v,model = "constant", lag.max    = 4)
+
+  # figure out which row holds the statistic for each
+  adf_row <- rownames(adf@cval)[1]
+  ers_row <- rownames(ers@cval)[1]
+
+  tibble(
+    variable  = v,
+    ADF_stat  = as.numeric(adf@teststat[adf_row]),
+    ADF_5pct  =    adf@cval[adf_row, "5pct"],
+    PP_stat   =    pp@teststat,
+    PP_5pct   =    pp@cval["5pct"],
+    KPSS_stat =    kpss@teststat,
+    KPSS_5pct =    kpss@cval["5pct"],
+    ERS_stat  = as.numeric(ers@teststat[ers_row]),
+    ERS_5pct  =    ers@cval[ers_row, "5pct"],
+  )
+})
+
+print(stationarity_results)
+```
+
+#### b. Cointegration
+
+```{r}
+#| label: cointegration-tests
+#| echo: TRUE
+#| message: FALSE
+#| warning: FALSE
+# Cointegration tests among inflation and its drivers
+
+
+# 1) Engle–Granger: infl ~ M2
+eg_mod    <- lm(infl ~ M2, data = latvia)
+eg_resid  <- residuals(eg_mod)
+eg_adf    <- ur.df(eg_resid, type = "none", selectlags = "AIC")
+cat("Engle–Granger ADF on residuals:\n")
+print(summary(eg_adf))
+
+# 2) Johansen trace test for a system of five
+joint_ts  <- ts(latvia[, c("infl","rGDP_pc","M2","unemp","USDfx")],
+                start = min(latvia$year), frequency = 1)
+jo_test   <- ca.jo(joint_ts, type = "trace", ecdet = "const", K = 2)
+cat("\nJohansen trace test summary:\n")
+print(summary(jo_test))
+```
+
+
 ### 2.1. Static Linear Regression (LRM)
 
 **Idea:**
@@ -401,26 +472,6 @@ stabs      <- max(Mod(polyroot(c(1, -lag_sel$selection["AIC(n)"]))))
 
 
 ```{r}
-#| label: Ste's table (NO NOT RUN)
-
-results <- tibble::tibble(
-  Model   = c("OLS-LRM","ARIMA(1,0,0)","ARDL(1,1)","ECM","VAR(4)"),
-  AIC     = c(lrm_aic, arima_aic, ardl_aic, ecm_aic, var_aic),
-  BIC     = c(lrm_bic, arima_bic, ardl_bic, ecm_bic, var_bic),
-  RMSE    = c(lrm_rmse, arima_rmse, ardl_rmse, ecm_rmse, var_rmse),
-  `No AC?` = c(lrm_dw>1.75, arima_lb>0.05, NA, NA, NA),
-  Notes   = c(
-    ifelse(lrm_bp_p>0.05,"H-V OK","H-V heterosked") %>% paste0("; DW=", round(lrm_dw,2)),
-    ifelse(arima_lb>0.05,"no autocorr.","autocorr."),
-    paste0("R²=", round(summary(model_ardl)$r.squared,2)),
-    paste0("EC term p=", round(coef(summary(ecm))["L(ec_term, 1)","Pr(>|t|)"],3)),
-    paste0("max root=", round(stabs,3))
-  )
-)
-print(results)
-```
-
-```{r}
 summary_results <- tibble(
   Model                 = c("OLS-LRM", "ARIMA(1,0,0)", "ARDL(1,1)", "ECM", "VAR"),
   AIC                   = c(aic_lrm, aic_arima, aic_ardl, aic_ecm, aic_var),
@@ -446,12 +497,10 @@ summary_results <- tibble(
   `Max root modulus`    = c(NA, NA, NA, NA, stabs)
 )
 
-kable(summary_results, digits = 3, caption = "Diagnostic Summary for Selected Models")
+print(summary_results)
 ```
 
-## 3.7 Breakpoint Analysis
-
-## 3.8 Chow Tests
+### 3.7 Breakpoint Analysis
 
 ```{r}
 # specify formula and data
@@ -600,7 +649,7 @@ print(accuracy_var)
 
 ```{r}
 #| fig-width: 10      # width in inches
-#| fig-height: 6     # height in inches
+#| fig-height: 3     # height in inches
 #| fig-dpi: 300      # resolution
 #| fig-align: center # (optional) center the figure
 
@@ -728,14 +777,14 @@ acc_ar2 <- results_ar2 %>%
     MAPE_AR2  = mean(abs(ar2_error/actual)) * 100
   )
 
-accuracy_compare <- bind_cols(acc_var, acc_ar2)
+accuracy_compare <- bind_rows(acc_var, acc_ar2)
 print(accuracy_compare)
 ```
 
 ```{r}
 #| label: plot actual vs both forecasts with CIs
 #| fig-width: 10      # width in inches
-#| fig-height: 6     # height in inches
+#| fig-height: 4     # height in inches
 #| fig-dpi: 300      # resolution
 #| fig-align: center # (optional) center the figure
 
