@@ -74,6 +74,7 @@ conflicts_prefer(dplyr::select)
 conflicts_prefer(scales::alpha)
 conflicts_prefer(vars::VAR)
 ```
+
 # Instructions
 
 You are requested to specify, using EViews (or R / Matlab / Python, NOT STATA), an appropriate econometric model for the year on year inflation rate (based on the consumer price index) of a selected country and sample period, to be agreed upon with your TA (Sara Staffolani for class 20 and Martin Fankhauser for class 21). Your groups will be as for the assignment of the first part of the course.
@@ -89,7 +90,7 @@ Each group is responsible for creating their own dataset. We recommend the [Inte
 > **Group 26**: LATVIA
 
 ```{r}
-latvia <- readr::read_csv("~/Documents/GitHub/20203-econometrics-ps/ps2/data/20203-dataset-final.csv", col_types = cols())
+latvia <- readr::read_csv("../data/latvia_data.csv", col_types = cols())
 ```
 
 ```{r}
@@ -108,10 +109,8 @@ bc_vars        <- c("HPI","CPI","infl","unemp")
 mon_vars       <- c("strate","ltrate","cbrate","M0","M1","M2")
 ```
 
-
-
 ```{r}
-#| label: Missingness diagnostics
+#| label: Missingness-diagnostics
 
 # Overall missing value counts
 latvia %>% 
@@ -122,6 +121,7 @@ latvia %>%
 # Visualize missingness
 DataExplorer::plot_missing(latvia)
 ```
+
 # Tasks
 
 After obtaining the relevant data, your tasks include:
@@ -131,7 +131,7 @@ After obtaining the relevant data, your tasks include:
 > Provide a descriptive analysis of the variables.
 
 ```{r}
-#| label: Numeric variables: summaries & distributions
+#| label: Numeric-variables-summaries-distributions
 
 # Identify numeric columns
 num_vars <- latvia %>% dplyr::select(where(is.numeric)) %>% names()
@@ -155,7 +155,7 @@ latvia %>%
 ```
 
 ```{r}
-#| label: A helper to build a faceted time‐series plot for any named vector
+#| label: helper-faceted-time-series-plot
 
 plot_time_facet <- function(df, vars, title, ncol = 2) {
   df %>%
@@ -224,9 +224,9 @@ print(p_mon)
 
 ```{r}
 #| label: stationarity-tests
-#| echo: TRUE
-#| message: FALSE
-#| warning: FALSE
+#| echo: true
+#| message: false
+#| warning: false
 
 library(purrr)
 library(tibble)
@@ -234,8 +234,8 @@ library(knitr)
 
 vars_to_test <- c("infl", "rGDP_pc", "M2", "unemp", "USDfx")
 
-stationarity_results <- map_dfr(vars_to_test, function(v) {
-  ts_v <- ts(latvia[[v]], start = min(latvia$year), frequency = 1)
+stationarity_results <- map_dfr(vars_to_test, function(v) {  clean_v <- na.omit(latvia[[v]])
+  ts_v <- ts(clean_v, start = min(latvia$year), frequency = 1)
 
   # run the tests
   adf  <- ur.df(ts_v,  type = "trend",    selectlags = "AIC")
@@ -267,9 +267,9 @@ print(stationarity_results)
 
 ```{r}
 #| label: cointegration-tests
-#| echo: TRUE
-#| message: FALSE
-#| warning: FALSE
+#| echo: true
+#| message: false
+#| warning: false
 # Cointegration tests among inflation and its drivers
 
 
@@ -288,7 +288,6 @@ cat("\nJohansen trace test summary:\n")
 print(summary(jo_test))
 ```
 
-
 ### 2.1. Static Linear Regression (LRM)
 
 **Idea:**
@@ -306,13 +305,14 @@ dwtest(model_lrm)        # Durbin–Watson for serial correlation
 
 ### 2.2. Univariate Autoregression (AR) / ARIMA
 
-**Idea:** Inflation often exhibits persistence; model it purely as its own lag(s) 
+**Idea:** Inflation often exhibits persistence; model it purely as its own lag(s)
 
 ### 2.2.a. AR(1)
 
 ```{r}
 # convert to ts
-infl_ts <- ts(latvia$infl, start=2001, frequency=1)
+infl_clean <- na.omit(latvia$infl)
+infl_ts <- ts(infl_clean, start=2001, frequency=1)
 
 # automatic ARIMA selection (here d=0 since we model year-on-year rate)
 auto_fit <- auto.arima(infl_ts, max.p=4, max.q=0, seasonal=TRUE) # There is room to play around with command specifications
@@ -320,11 +320,13 @@ summary(auto_fit)
 
 checkresiduals(auto_fit)
 ```
+
 ### 2.2.b. AR(2)
 
 ```{r}
 # convert to ts
-infl_ts <- ts(latvia$infl, start=2001, frequency=1)
+infl_clean <- na.omit(latvia$infl)
+infl_ts <- ts(infl_clean, start=2001, frequency=1)
 
 # automatic ARIMA selection (here d=0 since we model year-on-year rate)
 auto_fit <- auto.arima(infl_ts, max.p=4, max.q=0, seasonal=TRUE) # There is room to play around with command specifications
@@ -332,7 +334,6 @@ summary(auto_fit)
 
 checkresiduals(auto_fit)
 ```
-
 
 ### 2.3. ARDL(p,q) – Autoregressive Distributed Lags
 
@@ -340,7 +341,8 @@ checkresiduals(auto_fit)
 
 ```{r}
 # form time series ts object for all vars
-lat_ts <- ts(dplyr::select(latvia, infl, rGDP_pc, M2, unemp, cbrate), start=2001, frequency=1)
+clean_lat <- na.omit(dplyr::select(latvia, infl, rGDP_pc, M2, unemp, cbrate))
+lat_ts <- ts(clean_lat, start=2001, frequency=1)
 
 # ARDL(1,1) example: infl_t ~ infl_{t-1} + ΔM2_t + M2_{t-1}
 model_ardl <- dynlm(infl ~ L(infl,1) + diff(M2) + L(M2,1), data=lat_ts)
@@ -349,7 +351,7 @@ summary(model_ardl)
 
 ### 2.4. Error-Correction Model (ECM)
 
-**Idea:** If inflation and a driver (e.g. money growth or output gap) are cointegrated, model ∆infl as a function of ∆X and the lagged equilibrium error 
+**Idea:** If inflation and a driver (e.g. money growth or output gap) are cointegrated, model ∆infl as a function of ∆X and the lagged equilibrium error
 
 ```{r}
 # 1) test for cointegration between levels of infl and M2
@@ -358,7 +360,8 @@ summary(coint_test)
 
 # 2) if cointegrated, extract the long-run residual
 beta_hat <- coint_test@V[,1]       # normalized cointegration vector
-ec_term   <- ts(cbind(infl_ts, ts(latvia$M2,2001))[ ,1:2] %*% beta_hat, start=2001)
+var_subset <- na.omit(latvia[, c("infl", "M2")])
+ec_term   <- ts(as.matrix(var_subset) %*% beta_hat, start=2001)
 
 # 3) ECM: Δinfl ~ ΔM2 + lag(ec_term)
 ecm <- dynlm(d(infl) ~ d(M2) + L(ec_term,1), data=lat_ts)
@@ -371,8 +374,9 @@ summary(ecm)
 
 ```{r}
 # select variables
+clean_var_subset <- na.omit(latvia[, c("infl", "rGDP_pc", "M2")])
 var_data <- ts(
-  latvia[, c("infl", "rGDP_pc", "M2", "USDfx", "unemp")], 
+  clean_var_subset, 
   start     = 2001, 
   frequency = 1
 )
@@ -390,24 +394,6 @@ summary(var_model)
 irf(var_model, impulse="M2", response="infl", n.ahead=8) %>% plot()
 ```
 
-### 2.6. ARIMA–GARCH
-
-**Note:** this is an absolute overkill and I personally advise against using it, it comes from another course and I'm still not sure I can make sense of it.
-
-**Idea:** Inflation shocks may cluster in volatility—model residual variance via GARCH.
-
-```{r}
-# specify an ARIMA(1,0,0)+GARCH(1,1)
-spec <- ugarchspec(
-  mean.model = list(armaOrder = c(1,0)),
-  variance.model = list(model="sGARCH", garchOrder=c(1,1)),
-  distribution.model = "std"
-)
-
-fit <- ugarchfit(spec, infl_ts)
-show(fit)
-plot(fit, which="all")
-```
 
 ## 3. Diagnostic Checks
 
@@ -465,10 +451,6 @@ infl_resid <- residuals(var_model)[, "infl"]
 rmse_var   <- sqrt(mean(infl_resid^2))
 stabs      <- max(Mod(polyroot(c(1, -lag_sel$selection["AIC(n)"]))))
 ```
-
-### 3.6. ARIMA–GARCH
-
-**Note:** as I was saying before, I don't really know what to do with this. On the upside, all of the statistics and visualisations useful to determine the feaasibility and reliability of this model can be found above in 2.6.
 
 
 ```{r}
@@ -585,7 +567,6 @@ tests <- tibble(
 print(tests)
 ```
 
-
 ## 4. Economic Hypotheses
 
 > Discuss relevant economic hypotheses of interest regarding the model parameters.
@@ -645,7 +626,6 @@ accuracy_var <- results_var %>%
 print(results_var)
 print(accuracy_var)
 ```
-
 
 ```{r}
 #| fig-width: 10      # width in inches
@@ -713,13 +693,12 @@ var_forecast <- ggplot(results_var, aes(x = year)) +
 print(var_forecast)
 ```
 
-
 ## 6. Forecast Comparison
 
 > Compare your forecasts with those resulting from an AR (2) model.
 
 ```{r}
-#| label: Prepare the inflation series
+#| label: Prepare-inflation-series
 infl_ts     <- ts(var_data[,"infl"], start = start(var_data)[1], frequency = 1)
 T_total     <- length(infl_ts)
 n_forecasts <- 10
@@ -727,7 +706,7 @@ start_roll  <- T_total - n_forecasts
 ```
 
 ```{r}
-#| label: Rolling one-step AR(2) forecasts
+#| label: Rolling-one-step-AR2-forecasts
 ar2_fc    <- ar2_lower <- ar2_upper <- numeric(n_forecasts)
 
 for(i in seq_len(n_forecasts)) {
@@ -745,12 +724,12 @@ for(i in seq_len(n_forecasts)) {
 ```
 
 ```{r}
-#| label: Actual values for hold-out
+#| label: Actual-values-for-hold-out
 actuals    <- window(infl_ts, start = time(infl_ts)[start_roll + 1])
 ```
 
 ```{r}
-#| label: Build a tibble of AR(2) results
+#| label: Build-tibble-AR2-results
 results_ar2 <- tibble(
   year      = as.integer(time(actuals)),
   actual    = as.numeric(actuals),
@@ -762,7 +741,7 @@ results_ar2 <- tibble(
 ```
 
 ```{r}
-#| label: Compute accuracy metrics
+#| label: Compute-accuracy-metrics
 acc_var <- results_var %>%
   summarise(
     RMSE_VAR  = sqrt(mean(error^2)),
@@ -782,11 +761,11 @@ print(accuracy_compare)
 ```
 
 ```{r}
-#| label: plot actual vs both forecasts with CIs
-#| fig-width: 10      # width in inches
-#| fig-height: 4     # height in inches
-#| fig-dpi: 300      # resolution
-#| fig-align: center # (optional) center the figure
+#| label: plot-actual-vs-both-forecasts
+#| fig-width: 10
+#| fig-height: 4
+#| fig-dpi: 300
+#| fig-align: center
 
 ggplot() +
   # Actual, VAR & AR2 ribbons
@@ -855,16 +834,3 @@ ggplot() +
     plot.margin         = margin(t = 10, r = 15, b = 10, l = 10)
   )
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
