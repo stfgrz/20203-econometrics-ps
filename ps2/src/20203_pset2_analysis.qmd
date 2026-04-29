@@ -485,13 +485,19 @@ for (i in seq_len(h_out)) {
 
 ```{r forecast-accuracy}
 errors <- forecasts - actuals
+
+# Random-walk baseline: first forecast = last in-sample observation;
+# subsequent forecasts = previous year's actual.
+last_train_obs <- as.numeric(var_data[n_train, "GDP_Growth"])
+rw_forecasts   <- c(last_train_obs, actuals[-length(actuals)])
+rw_errors      <- actuals - rw_forecasts
+
 metrics <- data.frame(
   Model = c("BVAR(2) -- preferred", "VAR(2)", "AR(2)", "ARIMA (BIC)"),
   RMSE  = sqrt(colMeans(errors^2)),
   MAE   = colMeans(abs(errors)),
   ME    = colMeans(errors),
-  `Theil's U`= sqrt(colMeans(errors^2)) /
-               sqrt(mean((actuals - dplyr::lag(actuals, default = actuals[1]))^2)),
+  `Theil's U` = sqrt(colMeans(errors^2)) / sqrt(mean(rw_errors^2)),
   check.names = FALSE
 )
 metrics <- metrics[order(metrics$RMSE), ]
