@@ -690,6 +690,7 @@ chosen_r <- as.integer(sum(joh@teststat > joh@cval[, "5pct"]))
 loadings_summary <- NA_character_
 vecm_rank_text <- "At this threshold we do not reject rank zero, so no cointegrating vector is estimated and a VECM correction term is not included."
 loadings_text <- "No loading-matrix adjustment summary is reported because r = 0."
+conclusion_cointegration_text <- "no 5% evidence of cointegration among the three series."
 
 if (chosen_r > 0L) {
   vecm <- urca::cajorls(joh, r = chosen_r)
@@ -707,6 +708,11 @@ if (chosen_r > 0L) {
   )
   vecm_rank_text <- "Given r > 0, we estimate the VECM and report the cointegrating vector(s) β and loading matrix α in the preceding output."
   loadings_text <- paste0("The loading matrix suggests the strongest adjustment in: ", loadings_summary, ".")
+  conclusion_cointegration_text <- paste0(
+    "evidence for ", chosen_r, " cointegrating ",
+    if (chosen_r == 1L) "relationship" else "relationships",
+    " among the three series."
+  )
 
   ftab(beta_hat, digits = 3,
        caption = paste0("Cointegrating vector(s) β  (rank r = ", chosen_r, ")"))
@@ -1303,7 +1309,7 @@ the AR(2) coefficients are stable across the oil-shock, EEC-accession,
 and GFC dates and reject parameter constancy *only* at the COVID-19
 break — which we therefore treat as an exogenous outlier rather than as
 a regime change. The Engle--Granger and Johansen Trace tests provide
-`r if (chosen_r == 0L) "no 5% evidence of cointegration among the three series." else paste0("evidence for ", chosen_r, " cointegrating ", if (chosen_r == 1L) "relationship" else "relationships", " among the three series.")`
+`r conclusion_cointegration_text`
 
 The required AR(2) and VAR(2) models satisfy the standard residual
 diagnostics and the VAR(2) is covariance-stationary; the multivariate
