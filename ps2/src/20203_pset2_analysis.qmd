@@ -629,9 +629,9 @@ Engle--Granger residual-based tests followed by the Johansen system test.
 We run the static OLS cointegrating regression
 $\Delta y_t = \beta_0 + \beta_1 \pi_t + \beta_2 i_t + u_t$
 and test whether $\hat u_t$ is stationary. Because the regressors are
-estimated, conventional ADF $t$-critical values are biased toward
-non-rejection; we therefore report the MacKinnon (1996) finite-sample
-$p$-value implemented in `urca::ur.df`.
+estimated, conventional ADF reference distributions do not apply exactly;
+accordingly, we report the Engle--Granger residual ADF test statistic
+together with the critical values returned by `urca::ur.df`.
 
 ```{r engle-granger}
 eg_data <- as.data.frame(var_data)
