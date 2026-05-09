@@ -72,7 +72,7 @@ theme_pub <- function(base_size = 11) {
             legend.position  = "bottom",
             legend.title     = element_text(face = "bold", size = rel(0.85)),
             legend.text      = element_text(size = rel(0.85)),
-            legend.key.width = unit(1.2, "lines")
+            legend.key.width = grid::unit(1.2, "lines")
         )
 }
 theme_set(theme_pub())
