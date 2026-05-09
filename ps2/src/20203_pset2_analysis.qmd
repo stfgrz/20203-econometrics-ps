@@ -290,7 +290,7 @@ GDP growth has a long, thin left tail (the GFC and COVID episodes) and a
 right-skewed inflation distribution dominated by the 1970s. The Q--Q plots
 display systematic deviations from the dashed 45-degree line, particularly in
 the tails — formal tests of normality on the model residuals are reported in
-@tbl-unit-roots and in the diagnostic battery below.
+the diagnostic battery below.
 
 ## Bivariate structure
 
