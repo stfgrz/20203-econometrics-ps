@@ -688,6 +688,8 @@ long-run equilibrium $\beta' \mathbf{x}_{t-1}$.
 ```{r vecm-loadings}
 chosen_r <- as.integer(sum(joh@teststat > joh@cval[, "5pct"]))
 loadings_summary <- NA_character_
+vecm_rank_text <- "At this threshold we do not reject rank zero, so no cointegrating vector is estimated and a VECM correction term is not included."
+loadings_text <- "No loading-matrix adjustment summary is reported because r = 0."
 
 if (chosen_r > 0L) {
   vecm <- urca::cajorls(joh, r = chosen_r)
@@ -703,6 +705,8 @@ if (chosen_r > 0L) {
     paste0(colnames(alpha_hat), " \u2192 ", dominant_eq),
     collapse = "; "
   )
+  vecm_rank_text <- "Given r > 0, we estimate the VECM and report the cointegrating vector(s) β and loading matrix α in the preceding output."
+  loadings_text <- paste0("The loading matrix suggests the strongest adjustment in: ", loadings_summary, ".")
 
   ftab(beta_hat, digits = 3,
        caption = paste0("Cointegrating vector(s) β  (rank r = ", chosen_r, ")"))
@@ -716,9 +720,9 @@ regression provides single-equation evidence in favour of cointegration.
 From the Johansen trace test, the 5% selected rank is
 $r = `r chosen_r`$.
 
-`r if (chosen_r == 0L) "At this threshold we do not reject rank zero, so no cointegrating vector is estimated and a VECM correction term is not included." else "Given r > 0, we estimate the VECM and report the cointegrating vector(s) β and loading matrix α in the preceding output."`
+`r vecm_rank_text`
 
-`r if (chosen_r > 0L) paste0("The loading matrix suggests the strongest adjustment in: ", loadings_summary, ".") else "No loading-matrix adjustment summary is reported because r = 0."`
+`r loadings_text`
 
 Given the small sample ($`r nrow(spain)`$ annual observations), potential
 rank fragility in finite samples, and the assignment's explicit focus on
