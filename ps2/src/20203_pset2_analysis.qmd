@@ -1309,9 +1309,9 @@ the AR(2) coefficients are stable across the oil-shock, EEC-accession,
 and GFC dates and reject parameter constancy *only* at the COVID-19
 break — which we therefore treat as an exogenous outlier rather than as
 a regime change. The Engle--Granger and Johansen Trace tests provide
-complementary evidence for one cointegrating relationship among the
-three series, with the loading matrix concentrating adjustment in the
-inflation and interest-rate equations.
+complementary evidence of cointegration among the three series; the
+Johansen Trace test selects `r if (exists("chosen_r")) paste0("a rank of ", chosen_r) else "the reported cointegration rank"`, with the loading matrix
+concentrating adjustment in the inflation and interest-rate equations.
 
 The required AR(2) and VAR(2) models satisfy the standard residual
 diagnostics and the VAR(2) is covariance-stationary; the multivariate
