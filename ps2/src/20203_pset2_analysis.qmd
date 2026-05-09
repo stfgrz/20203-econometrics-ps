@@ -686,54 +686,43 @@ governs the speed at which each variable corrects deviations from the
 long-run equilibrium $\beta' \mathbf{x}_{t-1}$.
 
 ```{r vecm-loadings}
-chosen_r <- max(1L, sum(joh@teststat > joh@cval[, "5pct"]))
-vecm <- urca::cajorls(joh, r = chosen_r)
+chosen_r <- as.integer(sum(joh@teststat > joh@cval[, "5pct"]))
 
-beta_hat <- as.matrix(vecm$beta)
-colnames(beta_hat) <- paste0("ECT", seq_len(chosen_r))
-alpha_hat <- t(coef(vecm$rlm)[paste0("ect", seq_len(chosen_r)), , drop = FALSE])
-rownames(alpha_hat) <- c("GDP growth", "Inflation", "Short rate")
-colnames(alpha_hat) <- paste0("ECT", seq_len(chosen_r))
+if (chosen_r > 0L) {
+  vecm <- urca::cajorls(joh, r = chosen_r)
 
-ftab(beta_hat, digits = 3,
-     caption = paste0("Cointegrating vector(s) β  (rank r = ", chosen_r, ")"))
-ftab(alpha_hat, digits = 3,
-     caption = "Loading (adjustment) matrix α — rows: equation, columns: ECT")
+  beta_hat <- as.matrix(vecm$beta)
+  colnames(beta_hat) <- paste0("ECT", seq_len(chosen_r))
+  alpha_hat <- t(coef(vecm$rlm)[paste0("ect", seq_len(chosen_r)), , drop = FALSE])
+  rownames(alpha_hat) <- c("GDP growth", "Inflation", "Short rate")
+  colnames(alpha_hat) <- paste0("ECT", seq_len(chosen_r))
+
+  dominant_eq <- apply(abs(alpha_hat), 2, function(x) rownames(alpha_hat)[which.max(x)])
+  loadings_summary <- paste(
+    paste0(colnames(alpha_hat), " \u2192 ", dominant_eq),
+    collapse = "; "
+  )
+
+  ftab(beta_hat, digits = 3,
+       caption = paste0("Cointegrating vector(s) β  (rank r = ", chosen_r, ")"))
+  ftab(alpha_hat, digits = 3,
+       caption = "Loading (adjustment) matrix α — rows: equation, columns: ECT")
+}
 ```
 
 The Engle--Granger ADF on the residuals from the static cointegrating
-regression rejects the unit-root null at conventional levels, providing
-single-equation evidence in favour of cointegration. The Johansen Trace
-test confirms this: the null of $r = 0$ is rejected at the 5% level, and
-the null of $r \leq 1$ is rejected (marginally) at 5% but not at 1%, so
-the formal rank at the 5% level is $r = `r chosen_r`$. The two estimated
-cointegrating vectors normalise naturally onto GDP growth and inflation:
-the first (ECT1) ties GDP growth to the short rate with a small negative
-coefficient, and the second (ECT2) ties inflation to the short rate with
-a coefficient close to $-3/4$ — broadly the slope expected from a
-long-run Taylor-rule relationship in which the policy rate moves
-roughly one-for-one with inflation in real terms.
+regression provides single-equation evidence in favour of cointegration.
+From the Johansen trace test, the 5% selected rank is
+$r = `r chosen_r`$.
 
-The estimated loading matrix $\alpha$ is itself informative. Adjustment
-to **ECT1** is concentrated almost entirely in the GDP-growth equation
-(loading $\approx -0.49$, large in absolute value and correctly signed),
-while inflation and the short rate barely respond — consistent with GDP
-growth being the (approximately stationary) variable that absorbs short
-rate-driven disequilibria. Adjustment to **ECT2**, by contrast, is
-concentrated in the interest-rate equation (loading $\approx 0.24$),
-indicating that the short rate is the variable that moves to restore
-the long-run inflation--rate equilibrium — i.e., the empirical
-counterpart of a monetary-policy reaction. Both findings are
-economically reasonable.
+`r if (chosen_r == 0L) "At this threshold we do not reject rank zero, so no cointegrating vector is estimated and a VECM correction term is not included." else "Given r > 0, we estimate the VECM and report the cointegrating vector(s) β and loading matrix α above."`
 
-Because the cointegration rank is not zero, a VECM is, in principle,
-well-posed. However, given (i) only $`r nrow(spain)`$ annual
-observations, (ii) the fragility of $r$ estimates in such samples
-(the second trace test is borderline at 5% and does not reject at 1%),
-and (iii) the assignment's explicit request for VAR-in-levels and BVAR
-benchmarks, we proceed with the unrestricted level VAR and shrink it
-via the Minnesota prior, which already embeds a (weak) form of
-unit-root and co-movement information.
+`r if (chosen_r > 0L) paste0("The loading matrix suggests the strongest adjustment in: ", loadings_summary, ".") else ""`
+
+Given the small sample ($`r nrow(spain)`$ annual observations), potential
+rank fragility in finite samples, and the assignment's explicit focus on
+level VAR and BVAR benchmarks, we proceed with the unrestricted level VAR
+and its Minnesota-shrinkage counterpart for forecasting comparisons.
 
 # Model Specifications
 
@@ -1309,9 +1298,7 @@ the AR(2) coefficients are stable across the oil-shock, EEC-accession,
 and GFC dates and reject parameter constancy *only* at the COVID-19
 break — which we therefore treat as an exogenous outlier rather than as
 a regime change. The Engle--Granger and Johansen Trace tests provide
-complementary evidence of cointegration among the three series; the
-Johansen Trace test selects `r if (exists("chosen_r")) paste0("a rank of ", chosen_r) else "the reported cointegration rank"`, with the loading matrix
-concentrating adjustment in the inflation and interest-rate equations.
+`r if (chosen_r == 0L) "no 5% evidence of cointegration among the three series." else paste0("evidence for ", chosen_r, " cointegrating ", if (chosen_r == 1L) "relationship" else "relationships", " among the three series.")`
 
 The required AR(2) and VAR(2) models satisfy the standard residual
 diagnostics and the VAR(2) is covariance-stationary; the multivariate
