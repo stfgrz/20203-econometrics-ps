@@ -522,16 +522,17 @@ qlr_break   <- fs_years[which.max(fs$Fstats)]
 
 # Bai--Perron with BIC selection
 bp <- strucchange::breakpoints(y ~ y1 + y2, data = df_ar, h = 0.15)
-bp_years <- if (!any(is.na(bp$breakpoints))) df_ar$year[bp$breakpoints] else NA
+bp_breaks <- na.omit(bp$breakpoints)
+bp_years <- if (length(bp_breaks) > 0) df_ar$year[bp_breaks] else NA
 
 unknown_tab <- data.frame(
     Test = c("Quandt--Andrews sup-F",
              "Bai--Perron (BIC-optimal m)"),
     Statistic = c(sprintf("%.2f", qlr$statistic), sprintf("m = %d",
-                  if (any(is.na(bp$breakpoints))) 0 else length(bp$breakpoints))),
+                  length(bp_breaks))),
     `Break date(s)` = c(as.character(qlr_break),
-                        ifelse(any(is.na(bp_years)), "—",
-                               paste(bp_years, collapse = ", "))),
+                        if (length(bp_breaks) == 0) "—"
+                        else paste(bp_years, collapse = ", ")),
     `p-value` = c(sprintf("%.3f", qlr$p.value), "—"),
     check.names = FALSE
 )
