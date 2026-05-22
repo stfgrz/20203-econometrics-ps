@@ -1,0 +1,15 @@
+\begin{table}
+
+\caption{\label{tab:forecast-accuracy}1-step-ahead forecast accuracy (last 10 quarters)}
+\centering
+\begin{tabular}[t]{lrrrr}
+\toprule
+Model & RMSE & MAE & ME & Theil's U\\
+\midrule
+AR(2) & 0.605 & 0.481 & -0.481 & 1.545\\
+BVAR(2) -- preferred & 0.665 & 0.498 & -0.498 & 1.697\\
+VAR(2) & 0.833 & 0.674 & -0.674 & 2.126\\
+ARIMA (BIC) & 1.075 & 1.018 & -1.018 & 2.743\\
+\bottomrule
+\end{tabular}
+\end{table}

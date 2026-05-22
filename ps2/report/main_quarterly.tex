@@ -1,0 +1,56 @@
+\documentclass[9pt]{beamer}
+\usetheme[progressbar=frametitle]{metropolis}
+
+% Packages
+\usepackage{appendixnumberbeamer}
+\usepackage{booktabs}
+\usepackage[scale=2]{ccicons}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[font=tiny,skip=2pt]{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+
+\usepackage{siunitx}
+\sisetup{
+  detect-weight=true,
+  detect-family=true,
+  table-number-alignment = center,
+  table-format=3.6,
+  table-space-text-post = **
+}
+
+% Customize caption and table spacing for Beamer slides
+\makeatletter
+\AtBeginDocument{%
+  \setbeamerfont{caption}{size=\tiny}
+  \setbeamerfont{caption name}{size=\tiny}
+  \setlength{\abovecaptionskip}{1pt}
+  \setlength{\belowcaptionskip}{1pt}
+  \renewenvironment{table}[1][]{%
+    \def\@captype{table}%
+    \par\vspace{0.15em}%
+    \centering
+  }{%
+    \par\vspace{0.15em}%
+  }%
+}
+\makeatother
+
+% Title Info
+\title{\Huge Modelling \& Forecasting\\Spanish Real GDP Growth}
+\subtitle{Econometrics 20203 - Problem Set 2}
+\author{Stefano Graziosi - 3174891 \\
+        Gabriele Biroli - 3165990 \\
+        Luca Gritti
+        }
+\institute{MSc Economic and Social Sciences, Università Bocconi}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+
+
+\end{document}
