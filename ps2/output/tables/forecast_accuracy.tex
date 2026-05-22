@@ -1,0 +1,15 @@
+\begin{table}
+
+\caption{\label{tab:forecast_acc}1-step-ahead forecast accuracy (last 10 years)}
+\centering
+\begin{tabular}[t]{lrrrr}
+\toprule
+Model & RMSE & MAE & ME & Theil's U\\
+\midrule
+BVAR(2) -- preferred & 6.693 & 3.809 & 0.034 & 0.954\\
+ARIMA (BIC) & 6.794 & 3.713 & 0.181 & 0.968\\
+AR(2) & 6.890 & 4.236 & -0.184 & 0.982\\
+VAR(2) & 6.987 & 4.207 & -0.471 & 0.996\\
+\bottomrule
+\end{tabular}
+\end{table}

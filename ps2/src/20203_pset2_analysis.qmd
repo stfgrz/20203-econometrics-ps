@@ -72,7 +72,11 @@ theme_pub <- function(base_size = 11) {
             legend.position  = "bottom",
             legend.title     = element_text(face = "bold", size = rel(0.85)),
             legend.text      = element_text(size = rel(0.85)),
-            legend.key.width = grid::unit(1.2, "lines")
+            legend.key.width = grid::unit(1.2, "lines"),
+            plot.background  = element_rect(fill = "transparent", colour = NA),
+            panel.background = element_rect(fill = "transparent", colour = NA),
+            legend.background = element_rect(fill = "transparent", colour = NA),
+            legend.box.background = element_rect(fill = "transparent", colour = NA)
         )
 }
 theme_set(theme_pub())
@@ -80,9 +84,33 @@ theme_set(theme_pub())
 # Reproducibility
 set.seed(20203)
 
-# Helper for kable tables
-ftab <- function(x, digits = 3, caption = NULL, ...) {
-    knitr::kable(x, digits = digits, caption = caption, booktabs = TRUE, ...) |>
+# Helper for kable tables and LaTeX export
+ftab <- function(x, digits = 3, caption = NULL, latex_file = NULL, row.names = NULL, ...) {
+    if (is.null(row.names)) {
+        row.names <- !is.data.frame(x)
+    }
+    if (!is.null(latex_file)) {
+        dir.create("../output/tables", showWarnings = FALSE, recursive = TRUE)
+        filepath <- file.path("../output/tables", paste0(latex_file, ".tex"))
+        
+        # Clean caption for LaTeX
+        clean_caption <- caption
+        if (!is.null(clean_caption)) {
+            clean_caption <- gsub("\u03b2", "$\\\\beta$", clean_caption)
+            clean_caption <- gsub("\u03b1", "$\\\\alpha$", clean_caption)
+            clean_caption <- gsub("\u2192", "$\\\\rightarrow$", clean_caption)
+            clean_caption <- gsub("\u2014", "---", clean_caption)
+            clean_caption <- gsub(" \u2014 ", " --- ", clean_caption)
+            clean_caption <- gsub("≤", "$\\\\le$", clean_caption)
+            clean_caption <- gsub("ρ", "$\\\\rho$", clean_caption)
+            clean_caption <- gsub("%", "\\\\%", clean_caption)
+        }
+        
+        # Generate LaTeX table code
+        latex_code <- knitr::kable(x, digits = digits, caption = clean_caption, booktabs = TRUE, format = "latex", row.names = row.names, ...)
+        writeLines(as.character(latex_code), filepath)
+    }
+    knitr::kable(x, digits = digits, caption = caption, booktabs = TRUE, row.names = row.names, ...) |>
         kable_styling(
             bootstrap_options = c("striped", "hover", "condensed"),
             full_width = FALSE, position = "center"
@@ -177,7 +205,7 @@ series_pal <- c(
     "Short-term interest rate (%)" = unname(pal_main["RATE"])
 )
 
-ggplot(plot_df, aes(year, value, colour = series, fill = series)) +
+p_desc <- ggplot(plot_df, aes(year, value, colour = series, fill = series)) +
     geom_hline(yintercept = 0, colour = "grey55", linetype = "dashed",
                linewidth = 0.35) +
     geom_vline(
@@ -203,6 +231,9 @@ ggplot(plot_df, aes(year, value, colour = series, fill = series)) +
         caption  = "Source: Müller, Schularick & Trebesch (2024), Global Macro Database.",
         x = NULL, y = "Percent"
     )
+p_desc
+dir.create("../output/figures", showWarnings = FALSE, recursive = TRUE)
+ggsave("../output/figures/descriptive_plots.pdf", plot = p_desc, device = "pdf", width = 9, height = 6.5, dpi = 300, bg = "transparent")
 ```
 
 The series display the expected post-war Spanish business-cycle features. GDP
@@ -237,7 +268,7 @@ desc <- spain |>
         `Kurtosis` = mean((x - mean(x))^4) / sd(x)^4,
         .groups = "drop"
     )
-ftab(desc, digits = 2, caption = "Summary statistics, 1961--2025")
+ftab(desc, digits = 2, caption = "Summary statistics, 1961--2025", latex_file = "summary_stats")
 ```
 
 GDP growth has heavy left-tail behaviour (negative skew, excess kurtosis above
@@ -282,7 +313,10 @@ p_qq <- ggplot(dist_df, aes(sample = value, colour = series)) +
          subtitle = "Departures from the dashed line indicate non-normality",
          x = "Theoretical quantile", y = "Sample quantile")
 
-gridExtra::grid.arrange(p_hist, p_qq, nrow = 2)
+p_dist <- gridExtra::arrangeGrob(p_hist, p_qq, nrow = 2)
+grid::grid.draw(p_dist)
+dir.create("../output/figures", showWarnings = FALSE, recursive = TRUE)
+ggsave("../output/figures/distribution_plots.pdf", plot = p_dist, device = "pdf", width = 9, height = 4.2, dpi = 300, bg = "transparent")
 ```
 
 The histograms confirm the asymmetries already revealed by skewness and kurtosis:
@@ -331,7 +365,10 @@ p_ccf <- ggplot(ccf_df, aes(lag, acf)) +
          subtitle = "Negative lag k: short rate leads GDP growth by k years",
          x = "Lag (years)", y = "Cross-correlation")
 
-gridExtra::grid.arrange(p_corr, p_ccf, nrow = 1, widths = c(0.45, 0.55))
+p_scatter_corr <- gridExtra::arrangeGrob(p_corr, p_ccf, nrow = 1, widths = c(0.45, 0.55))
+grid::grid.draw(p_scatter_corr)
+dir.create("../output/figures", showWarnings = FALSE, recursive = TRUE)
+ggsave("../output/figures/scatter_corr.pdf", plot = p_scatter_corr, device = "pdf", width = 9, height = 4.2, dpi = 300, bg = "transparent")
 ```
 
 The contemporaneous correlation between GDP growth and the short rate is
@@ -381,7 +418,10 @@ p_rsd <- ggplot(roll_df, aes(year, gdp_sd)) +
          subtitle = "Tracks volatility — note the spike around 2008--2020",
          x = NULL, y = "Std. deviation (pp)")
 
-gridExtra::grid.arrange(p_rmean, p_rsd, nrow = 1, widths = c(0.55, 0.45))
+p_rolling <- gridExtra::arrangeGrob(p_rmean, p_rsd, nrow = 1, widths = c(0.55, 0.45))
+grid::grid.draw(p_rolling)
+dir.create("../output/figures", showWarnings = FALSE, recursive = TRUE)
+ggsave("../output/figures/rolling_stats.pdf", plot = p_rolling, device = "pdf", width = 9, height = 4.2, dpi = 300, bg = "transparent")
 ```
 
 The rolling means highlight the secular decline of inflation and the short
@@ -395,6 +435,14 @@ preview of the structural-stability tests reported below.
 ## Autocorrelation structure
 
 ```{r acf-pacf, fig.height=4.2}
+dir.create("../output/figures", showWarnings = FALSE, recursive = TRUE)
+pdf("../output/figures/acf_pacf.pdf", width = 9, height = 4.2, bg = "transparent")
+par(bg = "transparent")
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+Acf(ts_gdp, main = "ACF: GDP growth", lag.max = 16)
+Pacf(ts_gdp, main = "PACF: GDP growth", lag.max = 16)
+dev.off()
+
 par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
 Acf(ts_gdp, main = "ACF: GDP growth", lag.max = 16)
 Pacf(ts_gdp, main = "PACF: GDP growth", lag.max = 16)
@@ -426,7 +474,7 @@ ur_tab <- data.frame(
     `KPSS p-value` = c(kpss(ts_gdp)$p.value, kpss(ts_infl)$p.value, kpss(ts_strate)$p.value),
     check.names = FALSE
 )
-ftab(ur_tab, digits = 3)
+ftab(ur_tab, digits = 3, caption = "Unit-root tests, 1961--2025", latex_file = "unit_roots")
 ```
 
 GDP growth is stationary on visual inspection and on the KPSS test (high p-value);
@@ -502,7 +550,8 @@ chow_tab <- data.frame(
     check.names  = FALSE
 )
 ftab(chow_tab, digits = 3,
-     caption = "Chow F-tests for parameter constancy in the AR(2) for GDP growth")
+     caption = "Chow F-tests for parameter constancy in the AR(2) for GDP growth",
+     latex_file = "chow_tests")
 ```
 
 ## Quandt--Andrews sup-$F$ and Bai--Perron breakpoints
@@ -537,7 +586,8 @@ unknown_tab <- data.frame(
     check.names = FALSE
 )
 ftab(unknown_tab, digits = 3,
-     caption = "Unknown-date structural-break tests")
+     caption = "Unknown-date structural-break tests",
+     latex_file = "unknown_breaks")
 ```
 
 ```{r qlr-cusum-plot, fig.height=4}
@@ -578,7 +628,10 @@ p_cusum <- ggplot(cusum_df, aes(year, w)) +
          subtitle = "Process leaving the shaded band rejects parameter stability",
          x = NULL, y = "CUSUM")
 
-gridExtra::grid.arrange(p_qlr, p_cusum, nrow = 1)
+p_qlr_cusum <- gridExtra::arrangeGrob(p_qlr, p_cusum, nrow = 1)
+grid::grid.draw(p_qlr_cusum)
+dir.create("../output/figures", showWarnings = FALSE, recursive = TRUE)
+ggsave("../output/figures/qlr_cusum_plot.pdf", plot = p_qlr_cusum, device = "pdf", width = 9, height = 4, dpi = 300, bg = "transparent")
 ```
 
 ## Breakpoint Analysis: Interpretation
@@ -648,7 +701,8 @@ eg_tab <- data.frame(
     Value     = c(eg_stat, eg_crit)
 )
 ftab(eg_tab, digits = 3,
-     caption = "Engle--Granger residual-based cointegration test")
+     caption = "Engle--Granger residual-based cointegration test",
+     latex_file = "engle_granger")
 ```
 
 ## Johansen Trace test (no constant, no trend)
@@ -666,7 +720,7 @@ joh <- urca::ca.jo(var_data, type = "trace", ecdet = "none",
                    K = 2, spec = "transitory")
 
 joh_tab <- data.frame(
-    `H0: rank ≤ r` = paste0("r ≤ ", c(2, 1, 0)),
+    `H0: rank <= r` = paste0("r <= ", c(2, 1, 0)),
     `Trace stat`   = joh@teststat,
     `10%`          = joh@cval[, "10pct"],
     `5%`           = joh@cval[, "5pct"],
@@ -674,7 +728,8 @@ joh_tab <- data.frame(
     check.names    = FALSE
 )
 ftab(joh_tab, digits = 3,
-     caption = "Johansen Trace test (no constant, no trend, K = 2)")
+     caption = "Johansen Trace test (no constant, no trend, K = 2)",
+     latex_file = "johansen")
 ```
 
 ## Estimated cointegrating vector and loading matrix
@@ -715,9 +770,11 @@ if (chosen_r > 0L) {
   )
 
   ftab(beta_hat, digits = 3,
-       caption = paste0("Cointegrating vector(s) β  (rank r = ", chosen_r, ")"))
+       caption = paste0("Cointegrating vector(s) β  (rank r = ", chosen_r, ")"),
+       latex_file = "cointegrating_vector")
   ftab(alpha_hat, digits = 3,
-       caption = "Loading (adjustment) matrix α — rows: equation, columns: ECT")
+       caption = "Loading (adjustment) matrix α — rows: equation, columns: ECT",
+       latex_file = "loading_matrix")
 }
 ```
 
@@ -762,7 +819,7 @@ ar_aic <- sapply(0:5, function(p) AIC(forecast::Arima(ts_gdp, order = c(p, 0, 0)
 ar_bic <- sapply(0:5, function(p) BIC(forecast::Arima(ts_gdp, order = c(p, 0, 0))))
 
 ic_tab <- data.frame(p = 0:5, AIC = ar_aic, BIC = ar_bic)
-ftab(ic_tab, digits = 2, caption = "AR(p) information criteria")
+ftab(ic_tab, digits = 2, caption = "AR(p) information criteria", latex_file = "ar_ic")
 ```
 
 Both AIC and BIC select an AR(1) representation; the AR(2) thus has a small
@@ -772,7 +829,7 @@ which we treat as a slightly more parsimonious univariate alternative.
 
 ```{r ar2-coef}
 ar2_coef <- broom::tidy(ar2_model)
-ftab(ar2_coef, digits = 3, caption = "AR(2): coefficient estimates")
+ftab(ar2_coef, digits = 3, caption = "AR(2): coefficient estimates", latex_file = "ar2_coef")
 ```
 
 ## Multivariate models: VAR(2) and BVAR(2)
@@ -788,7 +845,7 @@ $$
 #| label: tbl-var-select
 #| tbl-cap: "VAR lag selection (1961--2025)"
 sel <- VARselect(var_data, lag.max = 6, type = "const")$criteria
-ftab(t(sel), digits = 2)
+ftab(t(sel), digits = 2, caption = "VAR lag selection (1961--2025)", latex_file = "var_lag_selection")
 ```
 
 All four information criteria select a single lag, but to comply with the
@@ -814,7 +871,8 @@ bvar_fit <- BVAR::bvar(var_data,
 ```{r var-summary}
 ftab(broom::tidy(var2_fit$varresult$GDP_Growth),
     digits = 3,
-    caption = "VAR(2): equation for GDP growth"
+    caption = "VAR(2): equation for GDP growth",
+    latex_file = "var2_gdp_eq"
 )
 ```
 
@@ -892,7 +950,7 @@ roots_tab <- data.frame(
     Root = seq_along(roots(var2_fit)),
     Modulus = roots(var2_fit)
 )
-ftab(roots_tab, digits = 4, caption = "Moduli of the companion-matrix roots")
+ftab(roots_tab, digits = 4, caption = "Moduli of the companion-matrix roots", latex_file = "companion_roots")
 ```
 
 All roots lie inside the unit circle, so the VAR(2) is covariance-stationary.
@@ -927,7 +985,7 @@ diag_tab <- data.frame(
     ),
     check.names = FALSE
 )
-ftab(diag_tab, digits = 3, caption = "VAR(2) residual diagnostics")
+ftab(diag_tab, digits = 3, caption = "VAR(2) residual diagnostics", latex_file = "var2_diagnostics")
 ```
 
 The Portmanteau test does not reject the null of no residual autocorrelation,
@@ -960,7 +1018,10 @@ p2 <- ggplot(
         colour = "red", linetype = "dashed"
     ) +
     labs(title = "Residual ACF", x = "Lag", y = "Autocorrelation")
-gridExtra::grid.arrange(p1, p2, nrow = 1)
+p_residual <- gridExtra::arrangeGrob(p1, p2, nrow = 1)
+grid::grid.draw(p_residual)
+dir.create("../output/figures", showWarnings = FALSE, recursive = TRUE)
+ggsave("../output/figures/residual_plot.pdf", plot = p_residual, device = "pdf", width = 9, height = 3.5, dpi = 300, bg = "transparent")
 ```
 
 The residuals fluctuate around zero with no visible pattern beyond the COVID
@@ -988,7 +1049,7 @@ gtab <- data.frame(
     `p-value` = c(g_int$p.value, g_inf$p.value, g_gdp$p.value),
     check.names = FALSE
 )
-ftab(gtab, digits = 3, caption = "Block Granger-causality tests")
+ftab(gtab, digits = 3, caption = "Block Granger-causality tests", latex_file = "granger_causality")
 ```
 
 The first row tests whether the short-term interest rate has predictive
@@ -1028,6 +1089,16 @@ bvar_irf <- BVAR::irf(bvar_fit,
     identification = TRUE,
     fevd = FALSE
 )
+dir.create("../output/figures", showWarnings = FALSE, recursive = TRUE)
+pdf("../output/figures/bvar_irf.pdf", width = 9, height = 4, bg = "transparent")
+par(bg = "transparent")
+plot(bvar_irf,
+    vars_response = "GDP_Growth",
+    vars_impulse = c("Interest_Rate", "GDP_Growth"),
+    area = TRUE, fill = "#9ecae1", col = "#08519c"
+)
+dev.off()
+
 plot(bvar_irf,
     vars_response = "GDP_Growth",
     vars_impulse = c("Interest_Rate", "GDP_Growth"),
@@ -1130,7 +1201,8 @@ metrics <- data.frame(
 metrics <- metrics[order(metrics$RMSE), ]
 ftab(metrics,
     digits = 3,
-    caption = "1-step-ahead forecast accuracy (last 10 years)"
+    caption = "1-step-ahead forecast accuracy (last 10 years)",
+    latex_file = "forecast_accuracy"
 )
 ```
 
@@ -1163,7 +1235,8 @@ dm_df <- data.frame(
 )
 ftab(dm_df,
     digits = 3,
-    caption = "Diebold--Mariano tests of equal predictive accuracy (squared-loss)"
+    caption = "Diebold--Mariano tests of equal predictive accuracy (squared-loss)",
+    latex_file = "dm_tests"
 )
 ```
 
@@ -1193,7 +1266,7 @@ bvar_band <- data.frame(
     hi     = fcst_hi[, "BVAR"]
 )
 
-ggplot() +
+p_forecast <- ggplot() +
     geom_hline(yintercept = 0, colour = "grey70", linewidth = 0.35) +
     geom_ribbon(data = bvar_band,
                 aes(year, ymin = lo, ymax = hi),
@@ -1215,6 +1288,9 @@ ggplot() +
         caption  = "Models re-estimated each period on an expanding window.",
         x = NULL, y = "GDP growth (%, y/y)"
     )
+p_forecast
+dir.create("../output/figures", showWarnings = FALSE, recursive = TRUE)
+ggsave("../output/figures/forecast_plot.pdf", plot = p_forecast, device = "pdf", width = 9, height = 4.8, dpi = 300, bg = "transparent")
 ```
 
 ```{r forecast-coverage}
@@ -1231,7 +1307,8 @@ cov_tab <- data.frame(
     check.names = FALSE
 )
 ftab(cov_tab, digits = 3,
-     caption = "Calibration of one-step-ahead 90% predictive intervals")
+     caption = "Calibration of one-step-ahead 90% predictive intervals",
+     latex_file = "predictive_intervals")
 ```
 
 ```{r forecast-accuracy-ex-covid}
@@ -1244,7 +1321,8 @@ metrics_x <- data.frame(
 )
 metrics_x <- metrics_x[order(metrics_x$RMSE), ]
 ftab(metrics_x, digits = 3,
-     caption = "Forecast accuracy excluding the 2020 COVID outlier")
+     caption = "Forecast accuracy excluding the 2020 COVID outlier",
+     latex_file = "forecast_accuracy_ex_covid")
 ```
 
 ## Discussion of the forecast comparison
