@@ -477,10 +477,13 @@ ur_tab <- data.frame(
 ftab(ur_tab, digits = 3, caption = "Unit-root tests, 1961--2025", latex_file = "unit_roots")
 ```
 
-GDP growth is stationary on visual inspection and on the KPSS test (high p-value);
-the ADF p-value of about 0.12 reflects the modest power of the test in samples
-of this size, but combined with the clearly mean-reverting behaviour and the
-ACF/PACF pattern we treat $\Delta y_t$ as $I(0)$. Inflation and the short rate
+The formal evidence on GDP growth is mixed: the ADF test does not reject a unit
+root ($p \approx 0.12$), while the KPSS test rejects level stationarity at the
+5% level ($p \approx 0.01$). The ADF outcome reflects the modest power of the
+test in samples of this size; combined with the clearly mean-reverting
+behaviour, the ACF/PACF pattern, and the convention of modelling growth rates
+as stationary, we treat $\Delta y_t$ as approximately $I(0)$ while
+acknowledging that the formal evidence is not unanimous. Inflation and the short rate
 display higher persistence; the KPSS test rejects level stationarity at 5%
 for both. Following the macroeconomic literature, we keep the variables in
 levels rather than differencing them, since (a) the Bayesian VAR's Minnesota
@@ -636,28 +639,31 @@ ggsave("../output/figures/qlr_cusum_plot.pdf", plot = p_qlr_cusum, device = "pdf
 
 ## Breakpoint Analysis: Interpretation
 
-The four pre-specified Chow tests **fail to reject** parameter constancy at
-the 1973, 1986, and 2008 candidate dates at conventional significance levels,
-while the test at **2020 (CH4)** is decisively rejected — confirming what the
-rolling moments and the 2020 outlier in the GDP-growth series already
-suggested. In other words, the AR(2) dynamics of Spanish GDP growth are
-remarkably stable across the oil shock, the EEC accession and even the GFC,
-but the COVID-19 contraction is an event of a different magnitude that the
-linear model cannot accommodate.
+The Chow tests give a more nuanced picture than a single COVID break. **CH2
+(1986)** does not reject parameter constancy, indicating that the EEC accession
+was absorbed without disrupting the AR(2) dynamics of Spanish GDP growth.
+**CH1 (1973)** and **CH3 (2008)** produce marginal rejections at the 5% level
+($p \approx 0.03$ and $0.01$), which we read as transitory volatility around
+the oil shock and the GFC rather than necessarily a permanent regime change.
+**CH4 (2020)** is decisively rejected ($F = 7.05$, $p \approx 0$): the
+COVID-19 contraction is an event of a different magnitude that the linear
+model cannot accommodate.
 
-This conclusion is corroborated by the Quandt--Andrews sup-$F$ test, which
-locates the most likely *unknown* break in the immediate vicinity of the
-COVID episode and rejects stability at the 5% level. The Bai--Perron
-procedure, which optimally selects the number of breaks via BIC, also points
-to the COVID period as the only economically meaningful break in the AR(2)
-representation. The recursive-CUSUM process drifts but largely stays inside
-the 5% confidence band until the very end of the sample, again consistent
-with a single late break rather than systematic structural change.
+The unknown-date tests point to *late-sample* instability rather than to the
+COVID date itself. The Quandt--Andrews sup-$F$ test locates the most likely
+break near **2015** and rejects stability at the 5% level, while the
+Bai--Perron procedure (BIC-optimal number of breaks) selects a single break in
+**2014**; both plausibly reflect the post-euro-crisis recovery and the
+low-rate environment. The recursive-CUSUM process drifts but largely stays
+inside the 5% confidence band until the very end of the sample, again
+consistent with a single late break rather than systematic structural change
+throughout.
 
 Two practical implications follow for the modelling strategy:
 
-1. *Sample retention.* Because the pre-2020 dynamics appear stable, we
-   keep the full 1961--2025 sample to estimate all models. Splitting at, e.g.,
+1. *Sample retention.* Because the pre-2020 dynamics appear relatively stable
+   (1986 is not rejected, and 1973 and 2008 only marginally so), we keep the
+   full 1961--2025 sample to estimate all models. Splitting at, e.g.,
    1986 would discard relevant high-inflation observations without
    improving fit.
 2. *COVID treatment.* The 2020 observation is a *one-off*, exogenous
@@ -1206,9 +1212,10 @@ ftab(metrics,
 )
 ```
 
-The BVAR(2) attains the lowest RMSE and MAE, narrowly ahead of the AR(2). The
-unrestricted VAR(2) is dominated by both, which is consistent with its larger
-small-sample estimation variance. Theil's U statistic, computed against a
+The BVAR(2) attains the lowest RMSE and the second-lowest MAE (the ARIMA edges
+it on MAE), narrowly ahead of the ARIMA and the AR(2). The unrestricted VAR(2)
+has the highest RMSE, consistent with its larger small-sample estimation
+variance. Theil's U statistic, computed against a
 random-walk benchmark, lies below one for every model, indicating that all
 four out-perform a naive forecast over this evaluation window.
 
@@ -1332,15 +1339,16 @@ predictive accuracy (Section 7.2), and interval calibration (this
 subsection) — together support a clear ranking of the four candidate
 specifications.
 
-**Point accuracy.** The BVAR(2) attains the lowest RMSE and MAE in the
-full evaluation window. The AR(2) and the ARIMA(BIC) follow closely,
-while the unrestricted VAR(2) is the worst performer of the four.
-Excluding the 2020 COVID observation reduces all RMSEs by roughly two
-thirds — the COVID error is a single-period level shock that propagates
-mechanically through every loss measure — but leaves the ranking
-unchanged: shrinkage continues to dominate, and the multivariate
+**Point accuracy.** The BVAR(2) attains the lowest RMSE and the
+second-lowest MAE in the full evaluation window (the ARIMA(BIC) is
+marginally better on MAE). The ARIMA and the AR(2) follow closely on
+RMSE, while the unrestricted VAR(2) is the worst performer of the four.
+Excluding the 2020 COVID observation reduces all RMSEs by roughly
+one-sixth (about 17%) — the COVID error is a single-period level shock
+that propagates mechanically through every loss measure — but leaves the
+ranking unchanged: shrinkage continues to dominate, and the multivariate
 information gives the BVAR(2) a small but persistent edge over the
-univariate AR(2).
+univariate benchmarks.
 
 **Statistical significance.** The Diebold--Mariano test does not reject
 equal predictive accuracy at conventional levels for any pairwise
@@ -1353,12 +1361,13 @@ declared significant at $\alpha = 0.05$.
 
 **Interval calibration.** Empirical coverage of the 90% predictive
 interval (table above) is an additional accuracy metric: a well-calibrated
-model should cover the realised value 9 times out of 10. In our window the
-BVAR(2) achieves the closest-to-nominal coverage, while the AR(2) and the
-ARIMA tend to be over-confident in the post-2020 inflation/rate phase.
-The unrestricted VAR(2) has wide intervals — reflecting its larger
-estimation variance — and therefore covers well, but at the cost of poor
-sharpness (wider average band).
+model should cover the realised value about 9 times out of 10. In our window
+the BVAR(2) and the ARIMA achieve the closest-to-nominal coverage (80%),
+while the AR(2) and the unrestricted VAR(2) under-cover (70%): their narrow
+average bands ($\approx 8$ pp) are over-confident rather than sharper. The
+BVAR(2) reaches its coverage with much wider intervals ($\approx 20$ pp), the
+price of honest uncertainty quantification given its larger posterior
+predictive variance in this small sample.
 
 **Why the BVAR(2) wins.** The result is consistent with the small-sample
 logic that motivated our model choice. With only 65 annual observations
@@ -1369,10 +1378,10 @@ training samples, which loses the modest second-lag information. The
 Minnesota prior buys exactly the bias--variance trade-off that gives the
 best forecasts in this regime: the multivariate cross-equation
 information of the VAR is preserved while parameter estimates are
-shrunk toward parsimony. The combined evidence (lowest RMSE/MAE,
-matching point-direction in DM tests, best calibrated 90% intervals)
-substantiates the *a priori* preference for the BVAR(2) recorded in
-Section 5.
+shrunk toward parsimony. The combined evidence (lowest RMSE and
+second-lowest MAE, DM statistics that all point the same way, and
+well-calibrated 90% intervals) substantiates the *a priori* preference
+for the BVAR(2) recorded in Section 5.
 
 # Conclusion
 
@@ -1397,8 +1406,9 @@ support a Phillips-curve interpretation of the joint dynamics.
 
 In the one-step-ahead pseudo-out-of-sample forecasting exercise, the
 **Bayesian VAR(2)** -- our **preferred specification** -- delivers the
-lowest RMSE and MAE *and* the most accurately calibrated 90% predictive
-intervals, with the AR(2) a close second and the unrestricted VAR(2)
+lowest RMSE and the second-lowest MAE, together with well-calibrated 90%
+predictive intervals (coverage tied with the ARIMA for closest-to-nominal),
+with the ARIMA and AR(2) close behind and the unrestricted VAR(2)
 the worst-performing of the multivariate models. This ranking is
 consistent with the small-sample logic that motivates Minnesota-style
 shrinkage: with only 65 annual observations and 21 reduced-form

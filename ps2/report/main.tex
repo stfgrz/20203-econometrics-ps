@@ -42,7 +42,7 @@
 \subtitle{Econometrics 20203 - Problem Set 2}
 \author{Stefano Graziosi - 3174891 \\
         Gabriele Biroli - 3165990 \\
-        Luca Gritti -
+        Luca Gritti
         }
 \institute{MSc Economic and Social Sciences, Università Bocconi}
 \date{\today}
@@ -54,7 +54,7 @@
 % ============================================================
 % SLIDE 1: Spain's GDP Growth History & Phases
 % ============================================================
-\begin{frame}{Spain's Real GDP Growth History \& Phases (1961-2025)}
+\begin{frame}{Spain's Real GDP Growth History \& Phases (1961--2025)}
 \begin{block}{}
 \footnotesize
 The series displays the expected post-war Spanish business-cycle features, with three main phases:
@@ -70,9 +70,9 @@ The series displays the expected post-war Spanish business-cycle features, with 
   \begin{column}{0.45\textwidth}
     \scriptsize
     \begin{itemize}
-      \item \textbf{1961-2007:} GDP growth is centered around three percent on average, displaying the strong expansion of the Spanish miracle years and the post-EEC-accession boom, with broadly stable volatility of $\sim$2 pp.
-      \item \textbf{2008-2013:} Two pronounced contractions define this period : the Global Financial Crisis (2008-09) and the subsequent euro-area sovereign-debt crisis (2011-13), pushing growth to sharply negative territory.
-      \item \textbf{2014-2025:} A gradual recovery followed, then interrupted by the COVID-19 collapse of 2020 (-10.9 percent). The post-2021 energy shock is also visible in the accompanying inflation and interest-rate series. By 2023-25, growth has returned to a moderate positive path.
+      \item \textbf{1961--2007:} GDP growth is centered around three percent on average, displaying the strong expansion of the Spanish miracle years and the post-EEC-accession boom, with broadly stable volatility of $\sim$2 pp.
+      \item \textbf{2008--2013:} Two pronounced contractions define this period : the Global Financial Crisis (2008--09) and the subsequent euro-area sovereign-debt crisis (2011--13), pushing growth to sharply negative territory.
+      \item \textbf{2014--2025:} A gradual recovery followed, then interrupted by the COVID-19 collapse of 2020 (-10.9 percent). The post-2021 energy shock is also visible in the accompanying inflation and interest-rate series. By 2023--25, growth has returned to a moderate positive path.
     \end{itemize}
   \end{column}
 
@@ -87,7 +87,7 @@ The series displays the expected post-war Spanish business-cycle features, with 
 \begin{frame}{Dataset Composition}
 \footnotesize
 
-We work with annual observations from the \textbf{Global Macroeconomic Database} (Müller, Schularick, and Trebesch, 2024), which provides harmonised long series for real GDP, CPI inflation, and a short-term interest rate. We restrict the sample to \textbf{1960-2025} to focus on the modern, post-Bretton-Woods Spanish economy, avoiding structural breaks associated with the two World Wars, the Spanish Civil War (1936-39), and Franco-era autarky (1939-59). The resulting sample provides \textbf{65 year-on-year growth observations}, sufficient for all models considered.
+We work with annual observations from the \textbf{Global Macroeconomic Database} (Müller, Schularick, and Trebesch, 2024), which provides harmonised long series for real GDP, CPI inflation, and a short-term interest rate. We restrict the sample to \textbf{1960--2025} to focus on the modern, post-Bretton-Woods Spanish economy, avoiding structural breaks associated with the two World Wars, the Spanish Civil War (1936--39), and Franco-era autarky (1939--59). The resulting sample provides \textbf{65 year-on-year growth observations}, sufficient for all models considered.
 
 \vspace{0.25cm}
 
@@ -97,7 +97,7 @@ The three variables entering the analysis are:
 
   \item \textbf{CPI Inflation} \,($\pi_t$, \%)\,: demand-pressure and monetary-stance indicator. Rises sharply in the 1970s, moderates after EEC accession (1986) and euro adoption (1999); post-2021 energy shock briefly pushes it back above 8\%. Strongly correlated with the short rate (Taylor-rule relationship).
 
-  \item \textbf{Short-term nominal interest rate} \,($i_t$, \%)\,: monetary-policy channel. Tracks the inflation pattern, declining from double digits in the 1980s to negative ECB-policy territory (2014-21) and rising again in 2023-25. Cross-correlation analysis shows short-rate movements lead GDP growth at horizons of 1-3 years, suggesting a monetary-transmission channel.
+  \item \textbf{Short-term nominal interest rate} \,($i_t$, \%)\,: monetary-policy channel. Tracks the inflation pattern, declining from double digits in the 1980s to negative ECB-policy territory (2014--21) and rising again in 2023--25. Cross-correlation analysis shows short-rate movements lead GDP growth at horizons of 1--3 years, suggesting a monetary-transmission channel.
 \end{itemize}
 
 \end{frame}
@@ -119,7 +119,7 @@ The three variables entering the analysis are:
 
     \item \textbf{Inflation} is right-skewed (1.20) with a maximum of 24.54\%, reflecting the high-inflation episodes of the 1970s and early 1980s. Its wide range (nearly 25 pp) underlines the fundamental structural change in Spanish monetary conditions since EEC accession.
 
-    \item \textbf{Short rate} mirrors the inflation pattern in skewness and range, consistent with a Taylor-rule-style policy reaction. The minimum of -0.55\% reflects the ECB's negative-rate policy window of 2014-21.
+    \item \textbf{Short rate} mirrors the inflation pattern in skewness and range, consistent with a Taylor-rule-style policy reaction. The minimum of -0.55\% reflects the ECB's negative-rate policy window of 2014--21.
 \end{itemize}
 }
 
@@ -150,7 +150,7 @@ The three variables entering the analysis are:
     \includegraphics[width=\linewidth]{../output/figures/scatter_corr.pdf}
   \end{column}
   \begin{column}{0.5\textwidth}
-    The contemporaneous correlation between GDP growth and the short rate is mildly negative, while inflation and the short rate are strongly positively correlated, consistent with a Taylor-rule-style policy reaction. The cross-correlation function shows that short-rate movements lead GDP growth at horizons of 1–3 years with a meaningful negative lead-correlation, suggesting a monetary-transmission channel that we will return to in the impulse-response analysis on Slide 13..
+    The contemporaneous correlation between GDP growth and the short rate is mildly negative, while inflation and the short rate are strongly positively correlated, consistent with a Taylor-rule-style policy reaction. The cross-correlation function shows that short-rate movements lead GDP growth at horizons of 1–3 years with a meaningful negative lead-correlation, suggesting a monetary-transmission channel that we will return to in the impulse-response analysis on Slide 13.
   \end{column}
 \end{columns}
 \end{block}
@@ -234,7 +234,7 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
   \begin{column}{0.46\textwidth}
     \footnotesize
     \begin{itemize}
-      \item The \textbf{Engle-Granger} ADF on the cointegrating regression residuals rejects the unit-root null ($-3.869 < -1.950$), providing single-equation evidence for cointegration between GDP growth and the short rate.
+      \item The \textbf{Engle--Granger} ADF on the cointegrating regression residuals rejects the unit-root null ($-3.869 < -1.950$), providing single-equation evidence for cointegration between GDP growth and the short rate.
 
       \item The \textbf{Johansen Trace} test confirms rank $r=2$ at the 5\% level: the nulls $r=0$ and $r \leq 1$ are rejected, while $r \leq 2$ is not. The two cointegrating vectors normalise naturally onto GDP growth and inflation, with the short rate as the error-correction variable.
 
@@ -277,7 +277,7 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
 
       \item All four VAR lag-selection criteria select a single lag; the \textbf{VAR(2)} is estimated as required by the brief. With only 65 observations and 21 reduced-form parameters, the unrestricted OLS VAR suffers from a large variance penalty.
 
-      \item We treat the \textbf{BVAR(2)} as our preferred model on a priori grounds (favourable small-sample properties via Minnesota shrinkage) and confirm this choice ex post via the diagnostic battery and the forecasting horse race (Slides 14-15).
+      \item We treat the \textbf{BVAR(2)} as our preferred model on a priori grounds (favourable small-sample properties via Minnesota shrinkage) and confirm this choice ex post via the diagnostic battery and the forecasting horse race (Slides 14--15).
     \end{itemize}
   \end{column}
 \end{columns}
@@ -300,10 +300,10 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
   \item \textbf{Bayesian shrinkage addresses the small-sample problem}\\
         With only 65 annual observations and 21 reduced-form parameters, the unrestricted OLS VAR pays a steep variance penalty. The Minnesota prior anchors the posterior toward a parsimonious random-walk benchmark, exploiting two stylised facts: (i) own lags carry most predictive content; (ii) higher-order lags add little beyond noise.
         
-        As we will see in Slides \ref{slide14:One-step-ahead Forecasting Evaluation}-\ref{slide15}, this bias-variance trade-off is confirmed ex post.
+        As we will see in Slides~\ref{slide14:One-step-ahead Forecasting Evaluation}--\ref{slide15}, this bias--variance trade-off is confirmed ex post.
 
   \item \textbf{Rich policy diagnostics}\\
-        Impulse-response functions (Slide 13) show that a 1\,$\sigma$ positive interest-rate shock reduces GDP growth over 1-3 years, quantifying monetary-transmission magnitude. The BVAR(2) also achieves the best-calibrated 90\% predictive intervals (empirical coverage 80\%) compared with the over-confident unrestricted VAR(2) (Slide 15).
+        Impulse-response functions (Slide 13) show that a 1\,$\sigma$ positive interest-rate shock reduces GDP growth over 1--3 years, quantifying monetary-transmission magnitude. The BVAR(2) also achieves well-calibrated 90\% predictive intervals (empirical coverage 80\%) compared with the over-confident unrestricted VAR(2) (Slide 15).
 
   \item \textbf{Structural-break evidence motivates robustness checks, but not a more complex model}\\
         As we will see in Slides 10–11, the structural-break tests indicate some instability: fixed-date Chow tests reject parameter constancy in 1973, 2008, and 2020, while unknown-date tests point to a late-sample break around 2014–2015. However, with only 65 annual observations, split-sample, dummy-rich, or time-varying-parameter specifications would be difficult to estimate reliably. We therefore keep a single time-invariant benchmark model, but interpret it cautiously and report forecast robustness with and without the 2020 COVID observation (Slide 15).
@@ -336,7 +336,7 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
       \item \textbf{CH1 (1973)} and \textbf{CH3 (2008)} produce marginal rejections at the 5\% level; however, the evidence for a lasting regime change is weaker than for COVID, these may reflect transitory volatility spikes rather than a structural shift in the AR parameters.
       \item \textbf{CH2 (1986)} does not reject parameter constancy, suggesting the EEC accession was absorbed without disrupting the AR(2) dynamics of Spanish GDP growth.
       \item \textbf{CH4 (2020)} is decisively rejected ($F=7.047$, $p\approx 0$): the COVID contraction is an event of a different magnitude that the linear model cannot accommodate.
-      \item The \textbf{Quandt-Andrews} sup-$F$ test locates the most likely unknown break near 2015 (in the expanding-window sense) and rejects stability at 5\%. The \textbf{Bai-Perron} procedure identifies 2014 as the single BIC-optimal break, both suggesting broader late-sample instability, possibly related to the post-euro-crisis recovery or low-rate environment.
+      \item The \textbf{Quandt--Andrews} sup-$F$ test locates the most likely unknown break near 2015 (in the expanding-window sense) and rejects stability at 5\%. The \textbf{Bai--Perron} procedure identifies 2014 as the single BIC-optimal break, both suggesting broader late-sample instability, possibly related to the post-euro-crisis recovery or low-rate environment.
     \end{itemize}
   \end{column}
 \end{columns}
@@ -360,7 +360,7 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
   \begin{column}{0.45\textwidth}
     \scriptsize
     \textbf{Two practical implications:}\\[0.3em]
-    \textbf{1. Sample retention.} Because the pre-2020 dynamics appear relatively stable (CH2 for EEC accession not rejected; CH1 and CH3 only marginally), we keep the \textbf{full 1961-2025 sample} to estimate all models. Splitting the sample would discard relevant high-inflation and high-growth observations without improving fit.\\[0.3em]
+    \textbf{1. Sample retention.} Because the pre-2020 dynamics appear relatively stable (CH2 for EEC accession not rejected; CH1 and CH3 only marginally), we keep the \textbf{full 1961--2025 sample} to estimate all models. Splitting the sample would discard relevant high-inflation and high-growth observations without improving fit.\\[0.3em]
     \textbf{2. COVID treatment.} The 2020 observation is a \textbf{one-off exogenous shock} rather than a regime change in the parameter vector. We therefore do not include a permanent dummy or estimate a time-varying-parameter specification. Instead we (i) report forecast accuracy with and without 2020 in the evaluation window and (ii) note that the Minnesota prior of the BVAR naturally absorbs such large innovations without over-parameterising the model (Slide 15).\\[0.3em]
     The AR(2) coefficients are not stable enough to ignore break evidence entirely: 1973 and 2008 reject parameter constancy, and 2020 is a clear outlier. However, the evidence is not sufficient, given the short sample, to justify estimating separate regimes.
   \end{column}
@@ -400,7 +400,7 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
   \begin{column}{0.35\textwidth}
     \includegraphics[width=\linewidth]{../output/figures/residual_plot.pdf}
     \scriptsize
-    The \textbf{Portmanteau} test does not reject no residual autocorrelation ($p=0.348$): two lags adequately capture the joint dynamics. The \textbf{Jarque-Bera} test rejects normality, unsurprising given the COVID-19 outlier; this matters for finite-sample inference but does not affect point-forecast consistency. The \textbf{ARCH} test does not reject conditional homoskedasticity at conventional levels. The residuals fluctuate around zero with no visible pattern beyond the COVID spike; the residual ACF lies inside the 95\% confidence bands at all displayed lags.
+    The \textbf{Portmanteau} test does not reject no residual autocorrelation ($p=0.348$): two lags adequately capture the joint dynamics. The \textbf{Jarque--Bera} test rejects normality, unsurprising given the COVID-19 outlier; this matters for finite-sample inference but does not affect point-forecast consistency. The \textbf{ARCH} test does not reject conditional homoskedasticity at conventional levels. The residuals fluctuate around zero with no visible pattern beyond the COVID spike; the residual ACF lies inside the 95\% confidence bands at all displayed lags.
   \end{column}
 \end{columns}
 
@@ -484,11 +484,11 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
   \begin{column}{0.38\textwidth}
     \tiny
     \begin{itemize}\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}
-      \item \textbf{Point accuracy.} The BVAR(2) attains the lowest RMSE and 2nd lowest MAE in the full evaluation window, with the AR(2) and ARIMA following closely. The unrestricted VAR(2) is the worst performer, consistent with its larger small-sample estimation variance. Excluding the 2020 observation reduces all RMSEs by roughly 18\% on average but leaves the ranking unchanged: shrinkage continues to dominate.
+      \item \textbf{Point accuracy.} The BVAR(2) attains the lowest RMSE and 2nd lowest MAE in the full evaluation window, with the AR(2) and ARIMA following closely. The unrestricted VAR(2) is the worst performer, consistent with its larger small-sample estimation variance. Excluding the 2020 observation reduces all RMSEs by roughly 17\% on average but leaves the ranking unchanged: shrinkage continues to dominate.
 
       \item \textbf{Statistical significance.} All DM statistics are negative, pointing in the same direction as the RMSE ranking, but the 10-year window is too short to reject equal predictive accuracy ($p > 0.05$). The accuracy gains are economically meaningful but not statistically decisive.
 
-      \item \textbf{Interval calibration.} Theil's U lies below 1 for every model, indicating all four out-perform a naive random-walk benchmark. The BVAR(2) achieves the closest-to-nominal 90\% coverage (80\%), while VAR(2) and AR(2) are over-confident. VAR(2)and AR(2) have narrower intervals at the cost of poor sharpness. The combined evidence, lowest/2nd lowest RMSE/MAE, matching DM-test direction, best-calibrated intervals, \textbf{substantiates the a priori preference for the BVAR(2)}.
+      \item \textbf{Interval calibration.} Theil's U lies below 1 for every model, so all four out-perform a naive random-walk benchmark. The BVAR(2) attains the closest-to-nominal 90\% coverage (80\%), whereas VAR(2) and AR(2) under-cover (70\%): their narrow bands are over-confident, not sharper. The combined evidence---lowest RMSE, 2nd-lowest MAE, DM statistics that all point the same way, and well-calibrated intervals---\textbf{substantiates the a priori preference for the BVAR(2)}.
     \end{itemize}
   \end{column}
 \end{columns}
@@ -501,8 +501,8 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
 \textbf{References}
 
 \begin{itemize}
-    \item Bańbura, M., Giannone, D., \& Reichlin, L. (2010). Large Bayesian vector autoregressions. \textit{Journal of Applied Econometrics}, 25(1), 71-92.
-    \item Litterman, R. B. (1986). Forecasting with Bayesian vector autoregressions - five years of experience. \textit{Journal of Business \& Economic Statistics}, 4(1), 25-38.
+    \item Bańbura, M., Giannone, D., \& Reichlin, L. (2010). Large Bayesian vector autoregressions. \textit{Journal of Applied Econometrics}, 25(1), 71--92.
+    \item Litterman, R. B. (1986). Forecasting with Bayesian vector autoregressions - five years of experience. \textit{Journal of Business \& Economic Statistics}, 4(1), 25--38.
     \item Müller, K., Schularick, M., \& Trebesch, C. (2024). \textit{The Global Macro Database} (Spain country file).
 \end{itemize}
 
