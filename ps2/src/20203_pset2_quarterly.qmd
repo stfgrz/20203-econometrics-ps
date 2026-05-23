@@ -51,11 +51,12 @@ pal_main <- c(
     AUX2  = "#e8a33d"
 )
 pal_models <- c(
-    "Actual"               = "#111111",
-    "BVAR(2) -- preferred" = "#c0504d",
-    "VAR(2)"               = "#1f4e79",
-    "AR(2)"                = "#2c8a4f",
-    "ARIMA (BIC)"          = "#7030a0"
+    "Actual"                   = "#111111",
+    "BVAR(2) -- preferred"     = "#c0504d",
+    "VAR(2)"                   = "#1f4e79",
+    "AR(2)"                    = "#2c8a4f",
+    "ARIMA (BIC)"              = "#7030a0",
+    "Combined (Equal weight)"  = "#e8a33d"
 )
 
 # Consistent ggplot theme
@@ -1107,12 +1108,12 @@ window**: at each origin $T = N - 10, \ldots, N - 1$, each model is re-estimated
 on data up to $T$ and used to predict $\Delta y_{T+1}$.
 
 ```{r forecasting-loop, results='hide'}
-h_out   <- 10
+h_out   <- 20
 n_total <- nrow(var_data)
 n_train <- n_total - h_out
 ci_lvl  <- 0.90
 
-models <- c("BVAR", "VAR2", "AR2", "ARIMA")
+models <- c("BVAR", "VAR2", "AR2", "ARIMA", "Combined")
 arr <- array(NA_real_,
     dim = c(h_out, length(models), 3),
     dimnames = list(NULL, models, c("fcst", "lo", "hi"))
@@ -1157,6 +1158,12 @@ for (i in seq_len(h_out)) {
     arr[i, "ARIMA", ] <- c(as.numeric(ar_fc$mean[1]),
                            as.numeric(ar_fc$lower[1, 1]),
                            as.numeric(ar_fc$upper[1, 1]))
+
+    # Combined forecast (equal weight of BVAR, VAR2, AR2, ARIMA)
+    arr[i, "Combined", "fcst"] <- mean(c(arr[i, "BVAR", "fcst"], arr[i, "VAR2", "fcst"], arr[i, "AR2", "fcst"], arr[i, "ARIMA", "fcst"]))
+    # Approximate CI by averaging the bounds (for illustration)
+    arr[i, "Combined", "lo"] <- mean(c(arr[i, "BVAR", "lo"], arr[i, "VAR2", "lo"], arr[i, "AR2", "lo"], arr[i, "ARIMA", "lo"]))
+    arr[i, "Combined", "hi"] <- mean(c(arr[i, "BVAR", "hi"], arr[i, "VAR2", "hi"], arr[i, "AR2", "hi"], arr[i, "ARIMA", "hi"]))
 }
 
 forecasts <- arr[, , "fcst"]
@@ -1176,7 +1183,7 @@ rw_forecasts <- c(last_train_obs, actuals[-length(actuals)])
 rw_errors <- actuals - rw_forecasts
 
 metrics <- data.frame(
-    Model = c("BVAR(2) -- preferred", "VAR(2)", "AR(2)", "ARIMA (BIC)"),
+    Model = c("BVAR(2) -- preferred", "VAR(2)", "AR(2)", "ARIMA (BIC)", "Combined (Equal weight)"),
     RMSE = sqrt(colMeans(errors^2)),
     MAE = colMeans(abs(errors)),
     ME = colMeans(errors),
@@ -1231,10 +1238,10 @@ fc_long <- as.data.frame(forecasts) |>
     dplyr::mutate(date = dates_oos, Actual = actuals) |>
     tidyr::pivot_longer(-date, names_to = "Model", values_to = "value") |>
     dplyr::mutate(Model = factor(Model,
-        levels = c("Actual", "BVAR", "VAR2", "AR2", "ARIMA"),
+        levels = c("Actual", "BVAR", "VAR2", "AR2", "ARIMA", "Combined"),
         labels = c("Actual",
                    "BVAR(2) -- preferred", "VAR(2)",
-                   "AR(2)", "ARIMA (BIC)")
+                   "AR(2)", "ARIMA (BIC)", "Combined (Equal weight)")
     ))
 
 bvar_band <- data.frame(
@@ -1258,8 +1265,8 @@ p_forecast <- ggplot() +
                size = 2.0) +
     scale_colour_manual(values = pal_models, name = NULL) +
     scale_linetype_manual(values = c("solid", "solid", "dashed",
-                                     "dashed", "dotted"), name = NULL) +
-    scale_shape_manual(values = c(16, 17, 15, 18, 4), name = NULL) +
+                                     "dashed", "dotted", "dotdash"), name = NULL) +
+    scale_shape_manual(values = c(16, 17, 15, 18, 4, 8), name = NULL) +
     scale_x_continuous(breaks = dates_oos, labels = oos_labels) +
     labs(
         title    = "One-step-ahead point forecasts vs. realised GDP growth (quarterly)",
@@ -1283,7 +1290,7 @@ covered <- sapply(models, function(m) {
 width <- sapply(models, function(m) mean(fcst_hi[, m] - fcst_lo[, m]))
 
 cov_tab <- data.frame(
-    Model = c("BVAR(2) -- preferred", "VAR(2)", "AR(2)", "ARIMA (BIC)"),
+    Model = c("BVAR(2) -- preferred", "VAR(2)", "AR(2)", "ARIMA (BIC)", "Combined (Equal weight)"),
     `Empirical coverage of 90% PI` = covered,
     `Average PI width (pp)`        = width,
     check.names = FALSE

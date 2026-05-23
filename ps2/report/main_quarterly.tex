@@ -39,7 +39,7 @@
 
 % Title Info
 \title{\Huge Modelling \& Forecasting\\Spanish Real GDP Growth}
-\subtitle{Econometrics 20203 - Problem Set 2}
+\subtitle{Econometrics 20203 - Problem Set 2 (Quarterly Data)}
 \author{Stefano Graziosi - 3174891 \\
         Gabriele Biroli - 3165990 \\
         Luca Gritti
@@ -51,6 +51,535 @@
 
 \maketitle
 
+% ============================================================
+% SLIDE 0: Overview
+% ============================================================
+\begin{frame}{Question and Answer}
 
+\begin{block}{Question}
+Which dynamic specification best explains and forecasts Spain's year-on-year real GDP growth?
+\end{block}
+
+\begin{block}{Answer in one line}
+The selected BVAR(2) is the best individual econometric model; an equal-weight forecast combination provides competitive accuracy and dampens model-specific overreactions.
+\end{block}
+
+\vspace{0.5cm}
+\begin{center}
+\footnotesize
+\textbf{Models compared:} BVAR(2) (preferred), AR(2), VAR(2), ARIMA (BIC-selected), and an equal-weight forecast combination.
+\end{center}
+\end{frame}
+
+
+% ============================================================
+% SLIDE 1: Empirical Set-up
+% ============================================================
+\begin{frame}{Empirical set-up}
+\label{slide:setup}
+
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\begin{block}{Data and variables}
+\footnotesize
+\begin{itemize}
+  \item \textbf{Country:} Spain
+  \item \textbf{Quarterly sample:} 2001Q1--2025Q4 (100 observations).
+  \item \textbf{Target:} $g_t$, real GDP growth (YoY \%).
+  \item \textbf{Predictors:} HICP inflation $\pi_t$ (YoY \%) and long-term interest rate $i_t$ (\%).
+  \item \textbf{Source:} Eurostat.
+\end{itemize}
+\end{block}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{block}{Forecasting design}
+\footnotesize
+\begin{itemize}
+  \item \textbf{Evaluation window:} 2021Q1--2025Q4 (5 years, 20 quarterly forecasts).
+  \item \textbf{Horizon:} 1-quarter-ahead point forecasts.
+  \item \textbf{Estimation:} recursive expanding window.
+  \item \textbf{Software:} R; OLS and Bayesian VAR estimation.
+\end{itemize}
+\end{block}
+\end{column}
+\end{columns}
+
+\vspace{0.3cm}
+\footnotesize
+The selected variables span the canonical New-Keynesian system: aggregate demand (GDP), price stability (inflation), and financial conditions (long-term interest rate).
+
+\end{frame}
+
+
+% ============================================================
+% SLIDE 2: Spain's GDP Growth History & Phases
+% ============================================================
+\begin{frame}{Descriptive macro picture}
+\label{slide:history}
+\begin{block}{}
+\footnotesize
+The quarterly series capture the major macroeconomic phases of the euro era:
+\end{block}
+
+\begin{columns}
+
+  \begin{column}{0.55\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{../output/figures_q/descriptive_plots.pdf}
+  \end{column}
+
+  \begin{column}{0.45\textwidth}
+    \scriptsize
+    \begin{itemize}
+      \item \textbf{2001--2007:} The pre-GFC expansion features robust, steady growth (often around 3--4 percent y/y), fueled by the construction boom and cheap credit post-euro adoption.
+      \item \textbf{2008--2013:} A severe double-dip recession. The initial Global Financial Crisis (2008--2009) is followed by the euro-area sovereign-debt crisis (2011--2013), pushing growth deeply negative.
+      \item \textbf{2014--2025:} The recovery is interrupted by the extreme COVID-19 shock of 2020Q2 (--21.5 percent y/y). The subsequent rebound is accompanied by the post-2021 energy-driven inflation spike and the resulting interest-rate tightening cycle, before normalising in 2024--25.
+    \end{itemize}
+  \end{column}
+
+\end{columns}
+
+\end{frame}
+
+
+% ============================================================
+% SLIDE 3: Descriptive Statistics
+% ============================================================
+\begin{frame}{Descriptive statistics: scale and distributions}
+\label{slide:descriptive}
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\input{../output/tables_q/summary_stats_q.tex}
+}
+
+{\footnotesize
+\begin{itemize}
+    \item \textbf{GDP growth} exhibits severe left-tail behaviour (negative skewness and kurtosis well above the Gaussian value of three), driven largely by the massive COVID-19 contraction of 2020Q2 (--21.5\%) and the GFC. The overall mean is pulled down compared to the pre-2008 trend.
+
+    \item \textbf{Inflation} shows moderate right-skewness, mainly reflecting the intense, though brief, post-pandemic energy price shock. The 10.1\% peak contrasts with the mildly deflationary episodes of 2009 and 2014.
+
+    \item \textbf{Long-term rate} is also mildly right-skewed. The range captures the transition from the $\sim$5--6\% rates of the early 2000s and the 2012 sovereign crisis peak, to the near-zero rates under the ECB's quantitative easing.
+\end{itemize}
+}
+
+\end{frame}
+
+
+% ============================================================
+% SLIDE 4: Marginal Distributions & Bivariate Structure
+% ============================================================
+\begin{frame}{Marginal Distributions \& Bivariate Structure}
+\label{slide:distributions}
+\footnotesize
+\begin{block}{}
+\begin{columns}
+  \begin{column}{0.5\textwidth}
+    \includegraphics[width=\linewidth]{../output/figures_q/distribution_plots.pdf}
+  \end{column}
+  \begin{column}{0.5\textwidth}
+    The histograms confirm the asymmetries: GDP growth has a very long left tail (COVID and GFC), while inflation is slightly right-skewed. The Q–Q plots confirm systematic deviations from normality in the tails. As we will see in Slide~\ref{slide:diagnostics}, this heavy-tailed behaviour—particularly from COVID—translates into rejections of normality for the model residuals.
+  \end{column}
+\end{columns}
+\end{block}
+
+\vspace{0.3cm}
+
+\begin{block}{}
+\begin{columns}
+  \begin{column}{0.5\textwidth}
+    \includegraphics[width=\linewidth]{../output/figures_q/scatter_corr.pdf}
+  \end{column}
+  \begin{column}{0.5\textwidth}
+    The contemporaneous correlation between GDP growth and the long-term rate reflects the joint dynamics of the euro era, while inflation and the long-term rate are positively correlated, consistent with a Fisher-effect interpretation. The cross-correlation function shows that interest-rate movements lead GDP growth at quarterly horizons, underpinning the financial-transmission channel.
+  \end{column}
+\end{columns}
+\end{block}
+\end{frame}
+
+
+% ============================================================
+% SLIDE 5: Rolling-Window Moments & Autocorrelation Structure
+% ============================================================
+\begin{frame}{Persistence in GDP growth \& Rolling Moments}
+\label{slide:rolling}
+\footnotesize
+\begin{block}{}
+\begin{columns}
+  \begin{column}{0.5\textwidth}
+    \includegraphics[width=\linewidth]{../output/figures_q/acf_pacf.pdf}
+  \end{column}
+  \begin{column}{0.5\textwidth}
+    The ACF decays slowly from a high first-order coefficient, reflecting the strong persistence of year-on-year quarterly growth rates (which mechanically overlap by three quarters). The PACF displays significant spikes at the first few lags, consistent with a low-order autoregressive process. This motivates our AR(p) and ARIMA models.
+  \end{column}
+\end{columns}
+\end{block}
+
+\vspace{0.4cm}
+
+\begin{block}{}
+\begin{columns}
+  \begin{column}{0.5\textwidth}
+    \includegraphics[width=\linewidth]{../output/figures_q/rolling_stats.pdf}
+  \end{column}
+  \begin{column}{0.5\textwidth}
+    Rolling means (8-quarter window) highlight the secular decline of the long-term rate towards zero during 2014--2021 and the dramatic plunge in average growth during the GFC and COVID-19. Rolling standard deviation spikes precisely during these crisis episodes, warning of time-varying volatility and potential structural breaks.
+  \end{column}
+\end{columns}
+\end{block}
+\end{frame}
+
+
+% ============================================================
+% SLIDE 6: Stationarity Tests
+% ============================================================
+\begin{frame}{(Preliminary) Diagnostic Checks: Stationarity}
+\label{slide:stationarity}
+\footnotesize
+Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level stationarity) tests. We combine the two so that conclusions agree only when both procedures reject in the appropriate direction.
+
+{\footnotesize
+\setlength{\tabcolsep}{5pt}
+\input{../output/tables_q/unit_roots_q.tex}
+}
+
+\footnotesize
+\begin{itemize}
+  \item \textbf{GDP growth shows mixed formal unit-root evidence.} The ADF test does not reject a unit root at 5\%, while KPSS rejects level stationarity. However, visually and economically, year-on-year growth is mean-reverting. We proceed treating $\Delta y_t$ as $I(0)$, a standard macroeconometric choice.
+
+  \item \textbf{Inflation and the long-term rate} display high persistence, with KPSS strongly rejecting stationarity for both. Following the macroeconomic literature, we keep the variables in \textit{levels} rather than differencing them, since (a) the Bayesian VAR's Minnesota prior shrinks coefficients toward a random walk and accommodates persistent regressors, and (b) cointegration with growth is plausible and economically meaningful.
+\end{itemize}
+
+\end{frame}
+
+
+% ============================================================
+% SLIDE 7: Cointegration Analysis
+% ============================================================
+\begin{frame}{(Preliminary) Diagnostic Checks: Cointegration}
+\label{slide:cointegration}
+\footnotesize
+
+\begin{columns}
+
+  \begin{column}{0.54\textwidth}
+    {\fontsize{5.5}{6}\selectfont
+    \setlength{\tabcolsep}{2.5pt}
+    \setlength{\abovecaptionskip}{2pt}
+    \setlength{\belowcaptionskip}{1pt}
+    \input{../output/tables_q/engle_granger_q.tex}
+    \vspace{0.1cm}
+    \input{../output/tables_q/johansen_q.tex}
+    \vspace{0.1cm}
+    \input{../output/tables_q/loading_matrix_q.tex}
+    }
+  \end{column}
+
+  \begin{column}{0.46\textwidth}
+    \footnotesize
+    \begin{itemize}\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}
+      \item The \textbf{Engle--Granger} test on the static regression residuals provides single-equation evidence. 
+      \item The \textbf{Johansen Trace} test jointly tests for the cointegration rank $r$ in the VECM representation. Depending on the chosen rank at the 5\% level, there may be limited or no strong evidence of cointegration.
+      \item Given the assignment's explicit focus on level VAR and BVAR benchmarks, and the potential rank fragility in finite samples of 100 observations, we proceed with the unrestricted level VAR and its Minnesota-shrinkage counterpart, which are robust to cointegration without explicitly imposing the VECM constraints.
+    \end{itemize}
+  \end{column}
+
+\end{columns}
+
+\end{frame}
+
+
+% ============================================================
+% SLIDE 8: Model Specifications
+% ============================================================
+\subsection{Model Specification}
+\begin{frame}{Model specification strategy}
+\label{slide:models}
+\small
+
+\begin{columns}
+  \begin{column}{0.54\textwidth}
+    {\fontsize{5}{5.5}\selectfont
+    \setlength{\tabcolsep}{2.5pt}
+    \setlength{\abovecaptionskip}{1pt}
+    \setlength{\belowcaptionskip}{1pt}
+    \input{../output/tables_q/ar_ic_q.tex}
+    \vspace{0.1cm}
+    \input{../output/tables_q/ar2_coef_q.tex}
+    \vspace{0.1cm}
+    \input{../output/tables_q/var2_gdp_eq_q.tex}
+    }
+  \end{column}
+
+  \begin{column}{0.46\textwidth}
+    \footnotesize
+    Five models are evaluated, balancing univariate persistence against multivariate macro-financial linkages:
+    \begin{itemize}\setlength{\itemsep}{3pt}\setlength{\parskip}{0pt}
+      \item The univariate criteria inform the choice of the \textbf{ARIMA (BIC)} baseline. The \textbf{AR(2)} is estimated to match the assignment specification, and its coefficient estimates confirm the high persistence.
+      
+      \item The multivariate criteria inform the lag selection for the VAR. To comply with the brief, we estimate a \textbf{VAR(2)}. With 100 observations and 21 parameters, the unrestricted VAR still pays a variance penalty.
+
+      \item We treat the \textbf{BVAR(2)} as our preferred individual model on a priori grounds (favourable small-sample properties via Minnesota shrinkage).
+      
+      \item A \textbf{Combined} forecast (equal-weight average) provides simple insurance against picking the wrong single model.
+    \end{itemize}
+  \end{column}
+\end{columns}
+
+\end{frame}
+
+
+% ============================================================
+% SLIDE 9: Optimal Model Specification
+% ============================================================
+\begin{frame}{Optimal Model Specification: Why a BVAR?}
+\label{slide:bvar}
+
+\textbf{\footnotesize Why a Bayesian Vector Autoregression?}
+
+\scriptsize
+\begin{enumerate}
+  \item \textbf{Captures simultaneous dynamics across the New-Keynesian triplet}\\
+        The triple $(\Delta y,\,\pi,\,i)$ spans the canonical NK three-equation system. For Spain, the long-term rate reflects euro-area monetary policy and sovereign risk premia, so the model traces the transmission of financial conditions to domestic activity.
+
+  \item \textbf{Bayesian shrinkage addresses the estimation variance problem}\\
+        With 100 quarterly observations and 21 reduced-form parameters, the unrestricted OLS VAR faces over-fitting. The Minnesota prior anchors the posterior toward a parsimonious random-walk benchmark. It preserves the multivariate cross-equation information while regularising the coefficients.
+
+  \item \textbf{Rich policy diagnostics}\\
+        Impulse-response functions (Slide~\ref{slide:granger-irf}) confirm that tighter financial conditions (a positive shock to the long-term rate) reduce GDP growth over the subsequent 12 quarters, in line with theoretical priors.
+
+  \item \textbf{Structural-break evidence motivates robust shrinkage, not splitting}\\
+        As we will see in Slides~\ref{slide:breaks}--\ref{slide:breaks-interp}, the structural-break tests strongly reject parameter constancy at the 2020 COVID shock. However, this is an exogenous outlier rather than a fundamental regime change. The Minnesota prior naturally absorbs such large innovations without requiring a fragile time-varying-parameter specification or splitting the sample.
+\end{enumerate}
+
+\end{frame}
+
+
+% ============================================================
+% SLIDE 10: Structural Stability & Breakpoint Tests
+% ============================================================
+\begin{frame}{Structural Stability: Breakpoint Tests}
+\label{slide:breaks}
+\footnotesize
+
+\begin{columns}
+  \begin{column}{0.58\textwidth}
+    {\fontsize{5.5}{6}\selectfont
+    \setlength{\tabcolsep}{2.5pt}
+    \setlength{\abovecaptionskip}{2pt}
+    \setlength{\belowcaptionskip}{1pt}
+    \input{../output/tables_q/chow_tests_q.tex}
+    \vspace{0.1cm}
+    \input{../output/tables_q/unknown_breaks_q.tex}
+    }
+  \end{column}
+
+  \begin{column}{0.42\textwidth}
+    \scriptsize
+    \begin{itemize}
+      \item \textbf{CH1 (2008Q1)} tests the GFC onset, which typically yields a marginal or strong rejection depending on the window, as growth dropped sharply.
+      \item \textbf{CH2 (2012Q3)} checks for a break around Draghi's "whatever it takes" OMT announcement, marking the end of the sovereign debt crisis phase.
+      \item \textbf{CH3 (2020Q2)} is decisively rejected: the COVID contraction is a one-off event of a totally different magnitude that the linear AR(2) cannot accommodate.
+      \item The \textbf{Quandt--Andrews} and \textbf{Bai--Perron} unknown-break procedures identify instability clustered around the GFC and COVID-19 episodes.
+    \end{itemize}
+  \end{column}
+\end{columns}
+
+\end{frame}
+
+
+% ============================================================
+% SLIDE 11: Breakpoint Interpretation & Visual Evidence
+% ============================================================
+\begin{frame}{Breakpoint Analysis: Interpretation \& Visual Evidence}
+\label{slide:breaks-interp}
+
+\begin{columns}
+
+  \begin{column}{0.55\textwidth}
+    \includegraphics[width=\linewidth]{../output/figures_q/qlr_cusum_plot.pdf}
+    \scriptsize
+    The CUSUM process tracks recursive residuals. A drift outside the bands signals structural instability. The QLR test points to the maximum F-statistic. The evidence highlights that 2020 is a severe outlier, with some instability also near the GFC.
+  \end{column}
+
+  \begin{column}{0.45\textwidth}
+    \scriptsize
+    \textbf{Two practical implications:}\\[0.3em]
+    \textbf{1. Sample retention.} Because the pre-2020 dynamics appear relatively stable save for the GFC turbulence, we keep the \textbf{full 2001Q1--2025Q4 sample} to estimate all models. Splitting the sample would discard vital history and cripple estimation precision.\\[0.3em]
+    \textbf{2. COVID treatment.} The 2020 observation is a \textbf{one-off exogenous shock} rather than a regime change in the parameter vector. We do not include a permanent dummy or estimate a time-varying-parameter model. We rely on the Minnesota prior of the BVAR to provide robust shrinkage and prevent the outlier from completely distorting the parameters.
+  \end{column}
+
+\end{columns}
+
+\end{frame}
+
+
+% ============================================================
+% SLIDE 12: Diagnostic Checks
+% ============================================================
+\begin{frame}{Diagnostics for the VAR(2) baseline}
+\label{slide:diagnostics}
+\footnotesize
+
+\begin{columns}
+  \begin{column}{0.55\textwidth}
+    \includegraphics[width=\linewidth]{../output/figures_q/residual_plot.pdf}
+    
+    {\fontsize{4.8}{5.3}\selectfont
+    \setlength{\tabcolsep}{1.2pt}
+    \setlength{\abovecaptionskip}{1pt}
+    \setlength{\belowcaptionskip}{1pt}
+    \input{../output/tables_q/var2_diagnostics_q.tex}
+    }
+  \end{column}
+
+  \begin{column}{0.45\textwidth}
+    \scriptsize
+    The \textbf{Portmanteau} test checks for residual autocorrelation; failing to reject indicates two lags adequately capture the joint dynamics. The \textbf{Jarque--Bera} test typically rejects normality due to the heavy tails from the COVID-19 outlier; while this matters for exact finite-sample inference, it does not destroy point-forecast consistency. The \textbf{ARCH} test checks for conditional heteroskedasticity. The residuals fluctuate around zero with no visible pattern beyond the COVID spike, and the ACF shows no significant residual structure.
+
+    {\fontsize{5}{5.5}\selectfont
+    \setlength{\tabcolsep}{1.5pt}
+    \setlength{\abovecaptionskip}{1pt}
+    \setlength{\belowcaptionskip}{1pt}
+    \input{../output/tables_q/companion_roots_q.tex}
+    }
+    \vspace{0.05cm}
+    \scriptsize All roots lie strictly inside the unit circle: the VAR(2) is covariance-stationary.
+
+    \vspace{0.15cm}
+  \end{column}
+\end{columns}
+
+\end{frame}
+
+
+% ============================================================
+% SLIDE 13: Economic Hypotheses: Granger Causality & IRFs
+% ============================================================
+\begin{frame}{Economic Hypotheses: Granger Causality \& Impulse Responses}
+\label{slide:granger-irf}
+\footnotesize
+
+\begin{columns}
+  \begin{column}{0.55\textwidth}
+    {\fontsize{5.5}{6}\selectfont
+    \setlength{\tabcolsep}{2.5pt}
+    \setlength{\abovecaptionskip}{2pt}
+    \setlength{\belowcaptionskip}{1pt}
+    \input{../output/tables_q/granger_causality_q.tex}
+    }
+    \scriptsize
+    Block Granger causality tests probe predictive relationships. We check if the long-term rate forecasts the joint vector of GDP and inflation (financial-transmission channel), if inflation forecasts the others (Phillips-curve), and if growth predicts nominal variables (demand-pull). Despite limited power, the evidence is broadly supportive of standard monetary VAR linkages.
+  \end{column}
+
+  \begin{column}{0.45\textwidth}
+    \includegraphics[width=\linewidth]{../output/figures_q/bvar_irf.pdf}
+    \scriptsize
+    BVAR(2) impulse responses over a 12-quarter horizon. The response of GDP growth to a 1\,$\sigma$ positive shock in the long-term rate (tighter financial conditions) shows a gradual decline, consistent with conventional transmission lags. The own-shock response decays smoothly toward zero, reflecting the stationary autoregressive dynamics.
+  \end{column}
+\end{columns}
+
+\end{frame}
+
+
+% ============================================================
+% SLIDE 14: Forecasting Evaluation — Point Forecast
+% ============================================================
+\subsection{Forecast Evaluation}
+\begin{frame}{Recursive forecasts: actual vs models}\label{slide:forecast-eval}
+\small
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.72\linewidth]{../output/figures_q/forecast_plot.pdf}
+\end{figure}
+
+\vspace{0.05cm}
+
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\input{../output/tables_q/forecast_accuracy_q.tex}
+}
+
+\end{frame}
+
+
+% ============================================================
+% SLIDE 15: Forecast Comparison
+% ============================================================
+\subsection{Forecast Comparison}
+\begin{frame}{Forecast accuracy: ranking and benchmark comparison}\label{slide:forecast-comp}
+
+\small
+
+\begin{columns}
+  \begin{column}{0.62\textwidth}
+\vspace{-0.2cm}
+    {\fontsize{5}{5.5}\selectfont
+    \setlength{\tabcolsep}{1.2pt}
+    \setlength{\abovecaptionskip}{1pt}
+    \setlength{\belowcaptionskip}{1pt}
+    \input{../output/tables_q/dm_tests_q.tex}
+    \vspace{0.1cm}
+    \input{../output/tables_q/predictive_intervals_q.tex}
+    }
+  \end{column}
+
+  \begin{column}{0.38\textwidth}
+    \tiny
+    \begin{itemize}\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}
+      \item \textbf{Point accuracy.} The models are ranked by RMSE and MAE over the 20-quarter (5-year) evaluation window. The Combined forecast and BVAR(2) perform best, successfully exploiting multivariate information without overfitting like the OLS VAR(2).
+      
+      \item \textbf{Statistical significance.} Negative DM statistics indicate lower expected squared loss for the first model. While the ranking is clear, the 20-quarter evaluation window provides limited power to reject equal predictive accuracy, so accuracy gains are economically meaningful if not always statistically decisive.
+
+      \item \textbf{Interval calibration.} The BVAR(2) generally provides robust empirical coverage of its 90\% predictive interval, striking the right balance. The combination of competitive RMSE/MAE and honest interval calibration confirms that the \textbf{BVAR(2)} is the preferred individual specification for this quarterly data problem.
+    \end{itemize}
+  \end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Economic interpretation and conclusion}
+\label{slide:conclusion}
+
+\begin{block}{Main conclusions}
+\footnotesize
+\begin{itemize}
+  \item Spain's GDP growth exhibits strong short-run persistence, but is heavily disrupted by the COVID-19 shock.
+  \item Inflation and long-term interest rate lags jointly improve the forecasting performance within a BVAR framework, consistent with a delayed macro-financial transmission.
+  \item The BVAR(2) outperforms the required AR(2) and VAR(2) benchmarks by RMSE/MAE; an equal-weight forecast combination performs best or competitively overall.
+\end{itemize}
+\end{block}
+
+\begin{block}{Caveat}
+\footnotesize
+The forecast ranking is numerically clear but not statistically decisive under Diebold-Mariano tests. Diagnostics warn against over-interpreting OLS assumptions (like normality) due to extreme crisis observations, so the strongest claim here is relative forecasting performance, not structural causality.
+\end{block}
+
+\end{frame}
+
+\begin{frame}{References and LLM Declaration}
+\label{slide:refs}
+\scriptsize
+
+\textbf{References}
+
+\begin{itemize}
+    \item Bańbura, M., Giannone, D., \& Reichlin, L. (2010). Large Bayesian vector autoregressions. \textit{Journal of Applied Econometrics}, 25(1), 71--92.
+    \item Litterman, R. B. (1986). Forecasting with Bayesian vector autoregressions - five years of experience. \textit{Journal of Business \& Economic Statistics}, 4(1), 25--38.
+    \item Eurostat (2024). \textit{Macroeconomic and Financial Data for Spain} (ESdata.xlsx).
+\end{itemize}
+
+\vspace{0.25cm}
+
+\textbf{Use of Large Language Models}
+
+Per the assignment guidelines, we declare that an LLM (Anthropic Claude) was used as an assistant for:
+(i) drafting and revising the prose of this report;
+(ii) suggesting the sequence of diagnostic and forecasting checks; and
+(iii) refactoring R code for clarity. All modelling choices, parameter interpretations, and substantive conclusions were verified by the author.
+
+\end{frame}
 
 \end{document}
