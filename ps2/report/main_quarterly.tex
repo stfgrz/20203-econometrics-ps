@@ -492,12 +492,14 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
 
   \begin{column}{0.38\textwidth}
     \tiny
-    \begin{itemize}\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}
+    \begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
       \item \textbf{Point accuracy.} The models are ranked by RMSE and MAE over the 20-quarter (5-year) evaluation window. The Combined forecast and BVAR(2) perform best, successfully exploiting multivariate information without overfitting like the OLS VAR(2).
-      
+
       \item \textbf{Statistical significance.} Negative DM statistics indicate lower expected squared loss for the first model. While the ranking is clear, the 20-quarter evaluation window provides limited power to reject equal predictive accuracy, so accuracy gains are economically meaningful if not always statistically decisive.
 
       \item \textbf{Interval calibration.} The BVAR(2) generally provides robust empirical coverage of its 90\% predictive interval, striking the right balance. The combination of competitive RMSE/MAE and honest interval calibration confirms that the \textbf{BVAR(2)} is the preferred individual specification for this quarterly data problem.
+
+      \item \textbf{Cross-frequency check.} The annual model (1960--2025, 10-year window) also crowns BVAR(2) as the best individual model, with similarly inconclusive DM tests and $\approx$80\% empirical coverage. Here the equal-weight \textbf{Combined} forecast adds a further edge---a diversification gain absent from the annual comparison.
     \end{itemize}
   \end{column}
 \end{columns}

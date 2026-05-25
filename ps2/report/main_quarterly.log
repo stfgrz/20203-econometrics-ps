@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.9.1)  25 MAY 2026 14:42
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.9.1)  25 MAY 2026 14:59
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1382,14 +1382,15 @@ r/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr
 /local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/l
 ocal/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/
 local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb></usr/l
-ocal/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/loc
-al/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfss0500.pfb></usr/local
-/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfss0600.pfb></usr/local/t
-exlive/2024/texmf-dist/fonts/type1/public/cm-super/sfss0700.pfb>
-Output written on main_quarterly.pdf (16 pages, 227366 bytes).
+ocal/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/loc
+al/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local
+/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfss0500.pfb></usr/local/t
+exlive/2024/texmf-dist/fonts/type1/public/cm-super/sfss0600.pfb></usr/local/tex
+live/2024/texmf-dist/fonts/type1/public/cm-super/sfss0700.pfb>
+Output written on main_quarterly.pdf (16 pages, 235830 bytes).
 PDF statistics:
- 305 PDF objects out of 1000 (max. 8388607)
- 236 compressed objects within 3 object streams
+ 310 PDF objects out of 1000 (max. 8388607)
+ 239 compressed objects within 3 object streams
  69 named destinations out of 1000 (max. 500000)
  112 words of extra memory for PDF output out of 10000 (max. 10000000)
 
