@@ -99,7 +99,7 @@ The three variables entering the analysis are:
 
   \item \textbf{CPI Inflation} \,($\pi_t$, \%)\,: demand-pressure and monetary-stance indicator. Rises sharply in the 1970s, moderates after EEC accession (1986) and euro adoption (1999); post-2021 energy shock briefly pushes it back above 8\%. Strongly correlated with the short rate (Taylor-rule relationship).
 
-  \item \textbf{Short-term nominal interest rate} \,($i_t$, \%)\,: monetary-policy channel. Tracks the inflation pattern, declining from double digits in the 1980s to negative ECB-policy territory (2014--21) and rising again in 2023--25. Cross-correlation analysis shows short-rate movements lead GDP growth at horizons of 1--3 years, suggesting a monetary-transmission channel.
+  \item \textbf{Short-term nominal interest rate} \,($i_t$, \%)\,: monetary-policy channel. Tracks the inflation pattern, declining from double digits in the 1980s to negative ECB-policy territory (2014--21) and rising again in 2023--25. Cross-correlation analysis shows short-rate movements lead GDP growth at horizons of 1--3 years, pointing to a monetary policy propagation mechanism.
 \end{itemize}
 
 \end{frame}
@@ -154,7 +154,7 @@ The three variables entering the analysis are:
     \includegraphics[width=\linewidth]{../output/figures/scatter_corr.pdf}
   \end{column}
   \begin{column}{0.5\textwidth}
-    The contemporaneous correlation between GDP growth and the short rate is mildly negative, while inflation and the short rate are strongly positively correlated, consistent with a Taylor-rule-style policy reaction. The cross-correlation function shows that short-rate movements lead GDP growth at horizons of 1–3 years with a meaningful negative lead-correlation, suggesting a monetary-transmission channel that we will return to in the impulse-response analysis on Slide~\ref{slide:granger-irf}.
+    The contemporaneous correlation between GDP growth and the short rate is mildly negative, while inflation and the short rate are strongly positively correlated, consistent with a Taylor-rule-style policy reaction. The cross-correlation function shows that short-rate movements lead GDP growth at horizons of 1–3 years with a meaningful negative lead-correlation, pointing to a monetary policy propagation mechanism that we revisit in the impulse-response analysis on Slide~\ref{slide:granger-irf}.
   \end{column}
 \end{columns}
 \end{block}
@@ -186,7 +186,7 @@ The three variables entering the analysis are:
     \includegraphics[width=\linewidth]{../output/figures/acf_pacf.pdf}
   \end{column}
   \begin{column}{0.5\textwidth}
-    The ACF decays geometrically from a first-order coefficient of approximately 0.45, while the PACF cuts off after the first lag. Both patterns are consistent with a stationary low-order AR process and motivate the AR(p) and ARIMA candidates considered below. As we will see in Slide~\ref{slide:diagnostics}, the AR(1)/AR(2) specifications also pass residual-autocorrelation checks, supporting the use of low-order autoregressive dynamics.
+    The ACF decays geometrically from a first-order coefficient of approximately 0.45, while the PACF cuts off after the first lag. Both patterns are consistent with a stationary low-order AR process and lend support to the AR(p) and ARIMA candidates considered below. As we will see in Slide~\ref{slide:diagnostics}, the AR(1)/AR(2) specifications also pass residual-autocorrelation checks, supporting the use of low-order autoregressive dynamics.
   \end{column}
 \end{columns}
 \end{block}
@@ -311,7 +311,7 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
         As we will see in Slides~\ref{slide:forecast-eval}--\ref{slide:forecast-comp}, this bias--variance trade-off is confirmed ex post.
 
   \item \textbf{Rich policy diagnostics}\\
-        Impulse-response functions (Slide~\ref{slide:granger-irf}) show that a 1\,$\sigma$ positive interest-rate shock reduces GDP growth over 1--3 years, quantifying monetary-transmission magnitude. The BVAR(2) also achieves well-calibrated 90\% predictive intervals (empirical coverage 80\%) compared with the over-confident unrestricted VAR(2) (Slide~\ref{slide:forecast-comp}).
+        Impulse-response functions (Slide~\ref{slide:granger-irf}) show that a 1\,$\sigma$ positive interest-rate shock reduces GDP growth over 1--3 years, measuring the size of the monetary policy pass-through. The BVAR(2) also achieves well-calibrated 90\% predictive intervals (empirical coverage 80\%) compared with the over-confident unrestricted VAR(2) (Slide~\ref{slide:forecast-comp}).
 
   \item \textbf{Structural-break evidence motivates robustness checks, but not a more complex model}\\
         As we will see in Slides~\ref{slide:breaks}--\ref{slide:breaks-interp}, the structural-break tests indicate some instability: fixed-date Chow tests reject parameter constancy in 1973, 2008, and 2020, while unknown-date tests point to a late-sample break around 2014–2015. However, with only 65 annual observations, split-sample, dummy-rich, or time-varying-parameter specifications would be difficult to estimate reliably. We therefore keep a single time-invariant benchmark model, but interpret it cautiously and report forecast robustness with and without the 2020 COVID observation (Slide~\ref{slide:forecast-comp}).
@@ -442,7 +442,7 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
   \begin{column}{0.45\textwidth}
     \includegraphics[width=\linewidth]{../output/figures/bvar_irf.pdf}
     \scriptsize
-    BVAR(2) impulse responses. The point estimate of the response of GDP growth to a 1\,$\sigma$ positive interest-rate shock is \textbf{negative on impact and over the first three years}, in line with conventional monetary-policy transmission, although the 84\% credible band straddles zero, another reflection of the limited identification afforded by an annual sample. The own-shock response of GDP growth decays smoothly toward zero, consistent with the AR(1)-like behaviour of the series.
+    BVAR(2) impulse responses. The point estimate of the response of GDP growth to a 1\,$\sigma$ positive interest-rate shock is \textbf{negative on impact and over the first three years}, consistent with the standard monetary policy mechanism, although the 84\% credible band straddles zero, another reflection of the limited identification afforded by an annual sample. The own-shock response of GDP growth decays smoothly toward zero, consistent with the AR(1)-like behaviour of the series.
   \end{column}
 \end{columns}
 
@@ -499,7 +499,7 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
     \begin{itemize}\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}
       \item \textbf{Point accuracy.} The BVAR(2) attains the lowest RMSE and 2nd lowest MAE in the full evaluation window, with the AR(2) and ARIMA following closely. The unrestricted VAR(2) is the worst performer, consistent with its larger small-sample estimation variance. Excluding the 2020 observation reduces all RMSEs by roughly 17\% on average but leaves the ranking unchanged: shrinkage continues to dominate.
 
-      \item \textbf{Statistical significance.} All DM statistics are negative, pointing in the same direction as the RMSE ranking, but the 10-year window is too short to reject equal predictive accuracy ($p > 0.05$). The accuracy gains are economically meaningful but not statistically decisive.
+      \item \textbf{Statistical significance.} All DM statistics are negative, pointing in the same direction as the RMSE ranking, but the 10-year window is too short to reject equal predictive accuracy ($p > 0.05$). The accuracy gains are economically meaningful but statistically inconclusive given the short evaluation window.
 
       \item \textbf{Interval calibration.} Theil's U lies below 1 for every model, so all four out-perform a naive random-walk benchmark. The BVAR(2) and ARIMA attain the closest-to-nominal 90\% coverage (80\%), whereas VAR(2) and AR(2) under-cover (70\%). Crucially, the BVAR(2) reaches its coverage with honestly wide intervals ($\approx 20$ pp), while the VAR(2)/AR(2) bands ($\approx 8$ pp) are over-confident rather than sharper. The combined evidence---lowest RMSE, 2nd-lowest MAE, DM statistics that all point the same way, and well-calibrated intervals---\textbf{substantiates the a priori preference for the BVAR(2)}.
     \end{itemize}
@@ -525,9 +525,9 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
 \textbf{Use of Large Language Models}
 
 Per the assignment guidelines, we declare that an LLM (Anthropic Claude) was used as an assistant for:
-(i) drafting and revising the prose of this report;
-(ii) suggesting the sequence of diagnostic and forecasting checks; and
-(iii) refactoring R code for clarity. All modelling choices, parameter interpretations, and substantive conclusions were verified by the author.
+(i) editing and polishing the written exposition;
+(ii) helping organise the presentation of empirical results; and
+(iii) cleaning up and reorganising R scripts. All analytical decisions, numerical results, and substantive conclusions were independently reviewed and confirmed by the authors.
 
 \end{frame}
 
