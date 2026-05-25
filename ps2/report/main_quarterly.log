@@ -1,7 +1,6 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.9.1)  22 MAY 2026 23:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.9.1)  25 MAY 2026 14:42
 entering extended mode
  restricted \write18 enabled.
- file:line:error style messages enabled.
  %&-line parsing enabled.
 **main_quarterly.tex
 (./main_quarterly.tex
@@ -1157,88 +1156,82 @@ Overfull \vbox (12.59242pt too high) detected at line 52
 [1
 
 {/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-[2
-
-]
 LaTeX Font Info:    Trying to load font information for TS1+cmss on input line 
-112.
- (/usr/local/texlive/2024/texmf-dist/tex/latex/base/ts1cmss.fd
+94.
+
+(/usr/local/texlive/2024/texmf-dist/tex/latex/base/ts1cmss.fd
 File: ts1cmss.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 112
-.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 94.
+
 
 (/usr/local/texlive/2024/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 112
-.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 94.
+
 
 (/usr/local/texlive/2024/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Trying to load font information for OT1+mathkerncmss on inp
-ut line 112.
+ut line 94.
 
 (/usr/local/texlive/2024/texmf-dist/tex/latex/sansmathaccent/ot1mathkerncmss.fd
 File: ot1mathkerncmss.fd 2020/01/31 Fontinst v1.933 font definitions for OT1/ma
 thkerncmss.
-) [3
+) [2
 
 {/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
-<../output/figures_q/descriptive_plots.pdf, id=49, 650.43pt x 469.755pt>
+<../output/figures_q/descriptive_plots.pdf, id=43, 650.43pt x 469.755pt>
 File: ../output/figures_q/descriptive_plots.pdf Graphic file (type pdf)
 <use ../output/figures_q/descriptive_plots.pdf>
 Package pdftex.def Info: ../output/figures_q/descriptive_plots.pdf  used on inp
-ut line 143.
+ut line 125.
 (pdftex.def)             Requested size: 169.01036pt x 122.06174pt.
- [4
+ [3
 
  <../output/figures_q/descriptive_plots.pdf>]
-(../output/tables_q/summary_stats_q.tex) [5
+(../output/tables_q/summary_stats_q.tex) [4
 
 ]
-<../output/figures_q/distribution_plots.pdf, id=74, 650.43pt x 303.1325pt>
+<../output/figures_q/distribution_plots.pdf, id=68, 650.43pt x 303.1325pt>
 File: ../output/figures_q/distribution_plots.pdf Graphic file (type pdf)
 <use ../output/figures_q/distribution_plots.pdf>
 Package pdftex.def Info: ../output/figures_q/distribution_plots.pdf  used on in
-put line 199.
+put line 181.
 (pdftex.def)             Requested size: 153.64493pt x 71.60617pt.
-<../output/figures_q/scatter_corr.pdf, id=76, 650.43pt x 303.1325pt>
+<../output/figures_q/scatter_corr.pdf, id=70, 650.43pt x 303.1325pt>
 File: ../output/figures_q/scatter_corr.pdf Graphic file (type pdf)
 <use ../output/figures_q/scatter_corr.pdf>
 Package pdftex.def Info: ../output/figures_q/scatter_corr.pdf  used on input li
-ne 199.
+ne 181.
 (pdftex.def)             Requested size: 153.64493pt x 71.60617pt.
- [6
+ [5
 
  <../output/figures_q/distribution_plots.pdf> <../output/figures_q/scatter_corr
 .pdf>]
-<../output/figures_q/acf_pacf.pdf, id=102, 650.43pt x 303.1325pt>
+<../output/figures_q/acf_pacf.pdf, id=96, 650.43pt x 303.1325pt>
 File: ../output/figures_q/acf_pacf.pdf Graphic file (type pdf)
 <use ../output/figures_q/acf_pacf.pdf>
 Package pdftex.def Info: ../output/figures_q/acf_pacf.pdf  used on input line 2
-31.
+13.
 (pdftex.def)             Requested size: 153.64493pt x 71.60617pt.
-<../output/figures_q/rolling_stats.pdf, id=103, 650.43pt x 303.1325pt>
+<../output/figures_q/rolling_stats.pdf, id=97, 650.43pt x 303.1325pt>
 File: ../output/figures_q/rolling_stats.pdf Graphic file (type pdf)
 <use ../output/figures_q/rolling_stats.pdf>
 Package pdftex.def Info: ../output/figures_q/rolling_stats.pdf  used on input l
-ine 231.
+ine 213.
 (pdftex.def)             Requested size: 153.64493pt x 71.60617pt.
- [7
+ [6
 
  <../output/figures_q/acf_pacf.pdf> <../output/figures_q/rolling_stats.pdf>]
-
-LaTeX Warning: Reference `tab:stationarity' on page 8 undefined on input line 2
-54.
-
-(../output/tables_q/unit_roots_q.tex) [8
+(../output/tables_q/unit_roots_q.tex) [7
 
 ]
 
 LaTeX Font Warning: Font shape `OT1/cmss/m/n' in size <5.5> not available
-(Font)              size <5> substituted on input line 290.
+(Font)              size <5> substituted on input line 272.
 
 (../output/tables_q/engle_granger_q.tex
 LaTeX Font Info:    Calculating math sizes for size <5.5> on input line 5.
@@ -1268,35 +1261,36 @@ LaTeX Font Warning: Font shape `OMS/cmsy/m/n' in size <2.75> not available
 (Font)              size <5> substituted on input line 5.
 
 ) (../output/tables_q/johansen_q.tex) (../output/tables_q/loading_matrix_q.tex)
-[9
+[8
 
 ] (../output/tables_q/ar_ic_q.tex) (../output/tables_q/ar2_coef_q.tex)
-(../output/tables_q/var2_gdp_eq_q.tex) [10
+(../output/tables_q/var2_gdp_eq_q.tex) [9
 
-] [11
-
-]
-(../output/tables_q/chow_tests_q.tex) (../output/tables_q/unknown_breaks_q.tex)
-[12
+] [10
 
 ]
-<../output/figures_q/qlr_cusum_plot.pdf, id=174, 650.43pt x 289.08pt>
+(../output/tables_q/chow_tests_q.tex
+Overfull \hbox (2.23355pt too wide) in paragraph at lines 5--14
+ [][] 
+ []
+
+) (../output/tables_q/unknown_breaks_q.tex)
+<../output/figures_q/qlr_cusum_plot.pdf, id=159, 650.43pt x 289.08pt>
 File: ../output/figures_q/qlr_cusum_plot.pdf Graphic file (type pdf)
 <use ../output/figures_q/qlr_cusum_plot.pdf>
 Package pdftex.def Info: ../output/figures_q/qlr_cusum_plot.pdf  used on input 
-line 415.
-(pdftex.def)             Requested size: 169.01036pt x 75.11491pt.
- [13
+line 379.
+(pdftex.def)             Requested size: 153.64493pt x 68.28668pt.
+ [11
 
  <../output/figures_q/qlr_cusum_plot.pdf>]
-<../output/figures_q/residual_plot.pdf, id=190, 650.43pt x 252.945pt>
+<../output/figures_q/residual_plot.pdf, id=176, 650.43pt x 252.945pt>
 File: ../output/figures_q/residual_plot.pdf Graphic file (type pdf)
 <use ../output/figures_q/residual_plot.pdf>
 Package pdftex.def Info: ../output/figures_q/residual_plot.pdf  used on input l
-ine 454.
+ine 418.
 (pdftex.def)             Requested size: 169.01036pt x 65.72554pt.
-
-(../output/tables_q/var2_diagnostics_q.tex
+ (../output/tables_q/var2_diagnostics_q.tex
 LaTeX Font Info:    Calculating math sizes for size <4.8> on input line 5.
 
 
@@ -1324,43 +1318,31 @@ Overfull \hbox (37.44775pt too wide) in paragraph at lines 5--14
  [][] 
  []
 
-) (../output/tables_q/companion_roots_q.tex) [14
+) (../output/tables_q/companion_roots_q.tex) [12
 
  <../output/figures_q/residual_plot.pdf>] (../output/tables_q/granger_causality
 _q.tex)
-<../output/figures_q/bvar_irf.pdf, id=204, 650.43pt x 289.08pt>
+<../output/figures_q/bvar_irf.pdf, id=190, 650.43pt x 289.08pt>
 File: ../output/figures_q/bvar_irf.pdf Graphic file (type pdf)
 <use ../output/figures_q/bvar_irf.pdf>
 Package pdftex.def Info: ../output/figures_q/bvar_irf.pdf  used on input line 4
-83.
+47.
 (pdftex.def)             Requested size: 138.2795pt x 61.45404pt.
- [15
+ [13
 
  <../output/figures_q/bvar_irf.pdf>]
-<../output/figures_q/forecast_plot.pdf, id=217, 650.43pt x 346.29375pt>
+<../output/figures_q/forecast_plot.pdf, id=204, 650.43pt x 346.29375pt>
 File: ../output/figures_q/forecast_plot.pdf Graphic file (type pdf)
 <use ../output/figures_q/forecast_plot.pdf>
 Package pdftex.def Info: ../output/figures_q/forecast_plot.pdf  used on input l
-ine 505.
+ine 469.
 (pdftex.def)             Requested size: 221.24907pt x 117.79115pt.
- (../output/tables_q/forecast_accuracy_q.tex) [16
+ (../output/tables_q/forecast_accuracy_q.tex) [14
 
  <../output/figures_q/forecast_plot.pdf>] (../output/tables_q/dm_tests_q.tex)
-(../output/tables_q/predictive_intervals_q.tex) [17
+(../output/tables_q/predictive_intervals_q.tex) [15
 
-]
-Overfull \hbox (22.7622pt too wide) in paragraph at lines 560--560
-[][]  
- []
-
-[18
-
-]
-Overfull \hbox (45.52441pt too wide) in paragraph at lines 583--583
-[][]  
- []
-
-[19
+] [16
 
 ]
 \tf@nav=\write6
@@ -1382,61 +1364,32 @@ L3 programming layer <2024-02-20>
 LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 2.6pt have occurred.
 
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-
-Package rerunfilecheck Warning: File `main_quarterly.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `main_quarterly.out':
-(rerunfilecheck)             Before: C700B2C6276E2A950418521747B0C5A4;437
-(rerunfilecheck)             After:  3E60DE1914BE05AB9A0CDCA72B182C99;438.
+Package rerunfilecheck Info: File `main_quarterly.out' has not changed.
+(rerunfilecheck)             Checksum: 91CA309B0C489A3CD55BADC18679FA4F;437.
  ) 
 Here is how much of TeX's memory you used:
- 30981 strings out of 474116
- 667605 string characters out of 5743683
+ 30967 strings out of 474116
+ 667438 string characters out of 5743683
  1949187 words of memory out of 5000000
- 52650 multiletter control sequences out of 15000+600000
+ 52646 multiletter control sequences out of 15000+600000
  578136 words of font info for 108 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  128i,13n,123p,1905b,1028s stack positions out of 10000i,1000n,20000p,200000b,200000s
-
-pdfTeX warning (dest): name{tab:stationarity} has been referenced but does not 
-exist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{Outline0.0.3.16} has been referenced but does not e
-xist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{Outline0.0.2.15} has been referenced but does not e
-xist, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{Outline0.0.1.9} has been referenced but does not ex
-ist, replaced by a fixed one
-
-</usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></
-usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></us
-r/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/
-local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/l
-ocal/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/loc
-al/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmss9.pfb></usr/local
-/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/loca
-l/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb></usr/local
-/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/t
-exlive/2024/texmf-dist/fonts/type1/public/cm-super/sfss0500.pfb></usr/local/tex
-live/2024/texmf-dist/fonts/type1/public/cm-super/sfss0600.pfb></usr/local/texli
-ve/2024/texmf-dist/fonts/type1/public/cm-super/sfss0700.pfb>
-Output written on main_quarterly.pdf (19 pages, 242905 bytes).
+</usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb>
+</usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></
+usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></us
+r/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr
+/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/l
+ocal/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/
+local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb></usr/l
+ocal/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/loc
+al/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfss0500.pfb></usr/local
+/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfss0600.pfb></usr/local/t
+exlive/2024/texmf-dist/fonts/type1/public/cm-super/sfss0700.pfb>
+Output written on main_quarterly.pdf (16 pages, 227366 bytes).
 PDF statistics:
- 333 PDF objects out of 1000 (max. 8388607)
- 259 compressed objects within 3 object streams
- 79 named destinations out of 1000 (max. 500000)
+ 305 PDF objects out of 1000 (max. 8388607)
+ 236 compressed objects within 3 object streams
+ 69 named destinations out of 1000 (max. 500000)
  112 words of extra memory for PDF output out of 10000 (max. 10000000)
 

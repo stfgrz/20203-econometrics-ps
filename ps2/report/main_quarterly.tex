@@ -52,37 +52,21 @@
 \maketitle
 
 % ============================================================
-% SLIDE 0: Overview
+% SLIDE 1: Question, Data, and Forecasting Design
 % ============================================================
-\begin{frame}{Question and Answer}
-
-\begin{block}{Question}
-Which dynamic specification best explains and forecasts Spain's year-on-year real GDP growth?
-\end{block}
-
-\begin{block}{Answer in one line}
-The selected BVAR(2) is the best individual econometric model; an equal-weight forecast combination provides competitive accuracy and dampens model-specific overreactions.
-\end{block}
-
-\vspace{0.5cm}
-\begin{center}
-\footnotesize
-\textbf{Models compared:} BVAR(2) (preferred), AR(2), VAR(2), ARIMA (BIC-selected), and an equal-weight forecast combination.
-\end{center}
-\end{frame}
-
-
-% ============================================================
-% SLIDE 1: Empirical Set-up
-% ============================================================
-\begin{frame}{Empirical set-up}
+\begin{frame}{Question, data, and forecasting design}
 \label{slide:setup}
+\footnotesize
+
+\begin{block}{Question \& answer}
+\textbf{Q:} Which dynamic specification best explains and forecasts Spain's year-on-year real GDP growth?\\[2pt]
+\textbf{A:} The selected BVAR(2) is the best individual econometric model; an equal-weight forecast combination provides competitive accuracy and dampens model-specific overreactions. \textbf{Models compared:} BVAR(2) (preferred), AR(2), VAR(2), ARIMA (BIC-selected), and an equal-weight combination.
+\end{block}
 
 \begin{columns}[T]
 \begin{column}{0.5\textwidth}
 \begin{block}{Data and variables}
-\footnotesize
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{1pt}
   \item \textbf{Country:} Spain
   \item \textbf{Quarterly sample:} 2001Q1--2025Q4 (100 observations).
   \item \textbf{Target:} $g_t$, real GDP growth (YoY \%).
@@ -94,8 +78,7 @@ The selected BVAR(2) is the best individual econometric model; an equal-weight f
 
 \begin{column}{0.5\textwidth}
 \begin{block}{Forecasting design}
-\footnotesize
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{1pt}
   \item \textbf{Evaluation window:} 2021Q1--2025Q4 (5 years, 20 quarterly forecasts).
   \item \textbf{Horizon:} 1-quarter-ahead point forecasts.
   \item \textbf{Estimation:} recursive expanding window.
@@ -105,8 +88,7 @@ The selected BVAR(2) is the best individual econometric model; an equal-weight f
 \end{column}
 \end{columns}
 
-\vspace{0.3cm}
-\footnotesize
+\vspace{0.15cm}
 The selected variables span the canonical New-Keynesian system: aggregate demand (GDP), price stability (inflation), and financial conditions (long-term interest rate).
 
 \end{frame}
@@ -237,7 +219,7 @@ The quarterly series capture the major macroeconomic phases of the euro era:
 \begin{frame}{(Preliminary) Diagnostic Checks: Stationarity}
 \label{slide:stationarity}
 \footnotesize
-Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level stationarity) tests. We combine the two so that conclusions agree only when both procedures reject in the appropriate direction.
+Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: level stationarity) tests. We combine the two so that conclusions agree only when both procedures reject in the appropriate direction.
 
 {\footnotesize
 \setlength{\tabcolsep}{5pt}
@@ -357,59 +339,41 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
 
 
 % ============================================================
-% SLIDE 10: Structural Stability & Breakpoint Tests
+% SLIDE 10: Structural Stability — Tests, Interpretation & Visual Evidence
 % ============================================================
-\begin{frame}{Structural Stability: Breakpoint Tests}
+\begin{frame}{Structural stability: breakpoint tests \& interpretation}
 \label{slide:breaks}
+\label{slide:breaks-interp}
 \footnotesize
 
-\begin{columns}
-  \begin{column}{0.58\textwidth}
-    {\fontsize{5.5}{6}\selectfont
-    \setlength{\tabcolsep}{2.5pt}
+\begin{columns}[T]
+  \begin{column}{0.5\textwidth}
+    {\fontsize{5}{5.5}\selectfont
+    \setlength{\tabcolsep}{1.5pt}
     \setlength{\abovecaptionskip}{2pt}
     \setlength{\belowcaptionskip}{1pt}
     \input{../output/tables_q/chow_tests_q.tex}
-    \vspace{0.1cm}
+    \vspace{0.05cm}
     \input{../output/tables_q/unknown_breaks_q.tex}
     }
-  \end{column}
-
-  \begin{column}{0.42\textwidth}
-    \scriptsize
-    \begin{itemize}
-      \item \textbf{CH1 (2008Q1)} tests the GFC onset, which typically yields a marginal or strong rejection depending on the window, as growth dropped sharply.
-      \item \textbf{CH2 (2012Q3)} checks for a break around Draghi's "whatever it takes" OMT announcement, marking the end of the sovereign debt crisis phase.
-      \item \textbf{CH3 (2020Q2)} is decisively rejected: the COVID contraction is a one-off event of a totally different magnitude that the linear AR(2) cannot accommodate.
-      \item The \textbf{Quandt--Andrews} and \textbf{Bai--Perron} unknown-break procedures identify instability clustered around the GFC and COVID-19 episodes.
-    \end{itemize}
-  \end{column}
-\end{columns}
-
-\end{frame}
-
-
-% ============================================================
-% SLIDE 11: Breakpoint Interpretation & Visual Evidence
-% ============================================================
-\begin{frame}{Breakpoint Analysis: Interpretation \& Visual Evidence}
-\label{slide:breaks-interp}
-
-\begin{columns}
-
-  \begin{column}{0.55\textwidth}
+    \vspace{0.1cm}
     \includegraphics[width=\linewidth]{../output/figures_q/qlr_cusum_plot.pdf}
-    \scriptsize
-    The CUSUM process tracks recursive residuals. A drift outside the bands signals structural instability. The QLR test points to the maximum F-statistic. The evidence highlights that 2020 is a severe outlier, with some instability also near the GFC.
   \end{column}
 
-  \begin{column}{0.45\textwidth}
+  \begin{column}{0.5\textwidth}
     \scriptsize
-    \textbf{Two practical implications:}\\[0.3em]
-    \textbf{1. Sample retention.} Because the pre-2020 dynamics appear relatively stable save for the GFC turbulence, we keep the \textbf{full 2001Q1--2025Q4 sample} to estimate all models. Splitting the sample would discard vital history and cripple estimation precision.\\[0.3em]
-    \textbf{2. COVID treatment.} The 2020 observation is a \textbf{one-off exogenous shock} rather than a regime change in the parameter vector. We do not include a permanent dummy or estimate a time-varying-parameter model. We rely on the Minnesota prior of the BVAR to provide robust shrinkage and prevent the outlier from completely distorting the parameters.
+    \begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+      \item \textbf{CH1 (2008Q1):} GFC onset --- marginal-to-strong rejection as growth drops sharply.
+      \item \textbf{CH2 (2012Q3):} Draghi's "whatever it takes" OMT, marking the end of the sovereign-debt phase.
+      \item \textbf{CH3 (2020Q2):} decisively rejected --- the COVID contraction is a one-off of a different magnitude the linear AR(2) cannot accommodate.
+      \item \textbf{Quandt--Andrews / Bai--Perron} unknown-break tests cluster instability around the GFC and COVID. The CUSUM drifts outside its bands and the QLR sup-$F$ peaks at 2020, confirming the COVID outlier.
+    \end{itemize}
+    \textbf{Two practical implications:}
+    \begin{enumerate}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+      \item \textbf{Sample retention.} Pre-2020 dynamics are relatively stable (save GFC turbulence), so we keep the \textbf{full 2001Q1--2025Q4 sample}; splitting would discard vital history and cripple precision.
+      \item \textbf{COVID treatment.} 2020 is a \textbf{one-off exogenous shock}, not a regime change --- no permanent dummy or TVP model. The BVAR's Minnesota prior shrinks robustly and prevents the outlier from distorting parameters.
+    \end{enumerate}
   \end{column}
-
 \end{columns}
 
 \end{frame}
@@ -540,45 +504,30 @@ Table~\ref{tab:stationarity} reports ADF (null: unit root) and KPSS (null: level
 
 \end{frame}
 
-\begin{frame}{Economic interpretation and conclusion}
+\begin{frame}{Conclusions, references, and LLM declaration}
 \label{slide:conclusion}
-
-\begin{block}{Main conclusions}
-\footnotesize
-\begin{itemize}
-  \item Spain's GDP growth exhibits strong short-run persistence, but is heavily disrupted by the COVID-19 shock.
-  \item Inflation and long-term interest rate lags jointly improve the forecasting performance within a BVAR framework, consistent with a delayed macro-financial transmission.
-  \item The BVAR(2) outperforms the required AR(2) and VAR(2) benchmarks by RMSE/MAE; an equal-weight forecast combination performs best or competitively overall.
-\end{itemize}
-\end{block}
-
-\begin{block}{Caveat}
-\footnotesize
-The forecast ranking is numerically clear but not statistically decisive under Diebold-Mariano tests. Diagnostics warn against over-interpreting OLS assumptions (like normality) due to extreme crisis observations, so the strongest claim here is relative forecasting performance, not structural causality.
-\end{block}
-
-\end{frame}
-
-\begin{frame}{References and LLM Declaration}
 \label{slide:refs}
 \scriptsize
 
-\textbf{References}
+\begin{block}{Main conclusions}
+\begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+  \item Spain's GDP growth exhibits strong short-run persistence, but is heavily disrupted by the COVID-19 shock.
+  \item Inflation and long-term interest rate lags jointly improve the forecasting performance within a BVAR framework, consistent with a delayed macro-financial transmission.
+  \item The BVAR(2) outperforms the required AR(2) and VAR(2) benchmarks by RMSE/MAE; an equal-weight forecast combination performs best or competitively overall.
+  \item \textbf{Caveat:} the ranking is numerically clear but not statistically decisive under Diebold--Mariano tests; diagnostics warn against over-interpreting OLS assumptions (e.g.\ normality) given extreme crisis observations, so the strongest claim is relative forecasting performance, not structural causality.
+\end{itemize}
+\end{block}
 
-\begin{itemize}
+\textbf{References}
+\begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
     \item Bańbura, M., Giannone, D., \& Reichlin, L. (2010). Large Bayesian vector autoregressions. \textit{Journal of Applied Econometrics}, 25(1), 71--92.
     \item Litterman, R. B. (1986). Forecasting with Bayesian vector autoregressions - five years of experience. \textit{Journal of Business \& Economic Statistics}, 4(1), 25--38.
     \item Eurostat (2024). \textit{Macroeconomic and Financial Data for Spain} (ESdata.xlsx).
 \end{itemize}
 
-\vspace{0.25cm}
+\vspace{0.1cm}
 
-\textbf{Use of Large Language Models}
-
-Per the assignment guidelines, we declare that an LLM (Anthropic Claude) was used as an assistant for:
-(i) drafting and revising the prose of this report;
-(ii) suggesting the sequence of diagnostic and forecasting checks; and
-(iii) refactoring R code for clarity. All modelling choices, parameter interpretations, and substantive conclusions were verified by the author.
+\textbf{Use of Large Language Models.} Per the assignment guidelines, we declare that an LLM (Anthropic Claude) was used as an assistant for: (i) drafting and revising the prose of this report; (ii) suggesting the sequence of diagnostic and forecasting checks; and (iii) refactoring R code for clarity. All modelling choices, parameter interpretations, and substantive conclusions were verified by the author.
 
 \end{frame}
 

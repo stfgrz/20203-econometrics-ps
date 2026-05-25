@@ -14,36 +14,30 @@
 \headcommand {\beamer@framepages {7}{7}}
 \headcommand {\slideentry {0}{0}{8}{8/8}{}{0}}
 \headcommand {\beamer@framepages {8}{8}}
-\headcommand {\slideentry {0}{0}{9}{9/9}{}{0}}
+\headcommand {\beamer@subsectionpages {1}{8}}
+\headcommand {\beamer@subsectionentry {0}{0}{1}{9}{Model Specification}}
+\headcommand {\slideentry {0}{1}{1}{9/9}{Model Specification}{0}}
 \headcommand {\beamer@framepages {9}{9}}
-\headcommand {\beamer@subsectionpages {1}{9}}
-\headcommand {\beamer@subsectionentry {0}{0}{1}{10}{Model Specification}}
-\headcommand {\slideentry {0}{1}{1}{10/10}{Model Specification}{0}}
+\headcommand {\slideentry {0}{1}{2}{10/10}{Model Specification}{0}}
 \headcommand {\beamer@framepages {10}{10}}
-\headcommand {\slideentry {0}{1}{2}{11/11}{Model Specification}{0}}
+\headcommand {\slideentry {0}{1}{3}{11/11}{Model Specification}{0}}
 \headcommand {\beamer@framepages {11}{11}}
-\headcommand {\slideentry {0}{1}{3}{12/12}{Model Specification}{0}}
+\headcommand {\slideentry {0}{1}{4}{12/12}{Model Specification}{0}}
 \headcommand {\beamer@framepages {12}{12}}
-\headcommand {\slideentry {0}{1}{4}{13/13}{Model Specification}{0}}
+\headcommand {\slideentry {0}{1}{5}{13/13}{Model Specification}{0}}
 \headcommand {\beamer@framepages {13}{13}}
-\headcommand {\slideentry {0}{1}{5}{14/14}{Model Specification}{0}}
+\headcommand {\beamer@subsectionpages {9}{13}}
+\headcommand {\beamer@subsectionentry {0}{0}{2}{14}{Forecast Evaluation}}
+\headcommand {\slideentry {0}{2}{1}{14/14}{Forecast Evaluation}{0}}
 \headcommand {\beamer@framepages {14}{14}}
-\headcommand {\slideentry {0}{1}{6}{15/15}{Model Specification}{0}}
+\headcommand {\beamer@subsectionpages {14}{14}}
+\headcommand {\beamer@subsectionentry {0}{0}{3}{15}{Forecast Comparison}}
+\headcommand {\slideentry {0}{3}{1}{15/15}{Forecast Comparison}{0}}
 \headcommand {\beamer@framepages {15}{15}}
-\headcommand {\beamer@subsectionpages {10}{15}}
-\headcommand {\beamer@subsectionentry {0}{0}{2}{16}{Forecast Evaluation}}
-\headcommand {\slideentry {0}{2}{1}{16/16}{Forecast Evaluation}{0}}
+\headcommand {\slideentry {0}{3}{2}{16/16}{Forecast Comparison}{0}}
 \headcommand {\beamer@framepages {16}{16}}
-\headcommand {\beamer@subsectionpages {16}{16}}
-\headcommand {\beamer@subsectionentry {0}{0}{3}{17}{Forecast Comparison}}
-\headcommand {\slideentry {0}{3}{1}{17/17}{Forecast Comparison}{0}}
-\headcommand {\beamer@framepages {17}{17}}
-\headcommand {\slideentry {0}{3}{2}{18/18}{Forecast Comparison}{0}}
-\headcommand {\beamer@framepages {18}{18}}
-\headcommand {\slideentry {0}{3}{3}{19/19}{Forecast Comparison}{0}}
-\headcommand {\beamer@framepages {19}{19}}
-\headcommand {\beamer@partpages {1}{19}}
-\headcommand {\beamer@subsectionpages {17}{19}}
-\headcommand {\beamer@sectionpages {1}{19}}
-\headcommand {\beamer@documentpages {19}}
-\headcommand {\gdef \inserttotalframenumber {18}}
+\headcommand {\beamer@partpages {1}{16}}
+\headcommand {\beamer@subsectionpages {15}{16}}
+\headcommand {\beamer@sectionpages {1}{16}}
+\headcommand {\beamer@documentpages {16}}
+\headcommand {\gdef \inserttotalframenumber {15}}
