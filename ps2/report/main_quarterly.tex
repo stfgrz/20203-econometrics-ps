@@ -42,7 +42,7 @@
 \subtitle{Econometrics 20203 - Problem Set 2 (Quarterly Data)}
 \author{Stefano Graziosi - 3174891 \\
         Gabriele Biroli - 3165990 \\
-        Luca Gritti
+        Luca Gritti - 3037416
         }
 \institute{MSc Economic and Social Sciences, Università Bocconi}
 \date{\today}
@@ -58,28 +58,23 @@
 \label{slide:setup}
 \footnotesize
 
-\begin{block}{Question \& answer}
-\textbf{Q:} Which dynamic specification best explains and forecasts Spain's year-on-year real GDP growth?\\[2pt]
-\textbf{A:} The selected BVAR(2) is the best individual econometric model; an equal-weight forecast combination provides competitive accuracy and dampens model-specific overreactions. \textbf{Models compared:} BVAR(2) (preferred), AR(2), VAR(2), ARIMA (BIC-selected), and an equal-weight combination.
-\end{block}
-
 \begin{columns}[T]
 \begin{column}{0.5\textwidth}
-\begin{block}{Data and variables}
+\begin{block}{Data}
 \begin{itemize}\setlength{\itemsep}{1pt}
   \item \textbf{Country:} Spain
   \item \textbf{Quarterly sample:} 2001Q1--2025Q4 (100 observations).
   \item \textbf{Target:} $g_t$, real GDP growth (YoY \%).
-  \item \textbf{Predictors:} HICP inflation $\pi_t$ (YoY \%) and long-term interest rate $i_t$ (\%).
-  \item \textbf{Source:} Eurostat.
+  \item \textbf{Predictors:} HICP inflation $\pi_t$ (YoY \%) and short-term interest rate $i_t$ (3-month EURIBOR, \%).
+  \item \textbf{Source:} Barigozzi, Lissona \& Tonni (2025); short rate (3-month EURIBOR) from the ECB Data Portal.
 \end{itemize}
 \end{block}
 \end{column}
 
 \begin{column}{0.5\textwidth}
-\begin{block}{Forecasting design}
+\begin{block}{Specifications for the forecasting}
 \begin{itemize}\setlength{\itemsep}{1pt}
-  \item \textbf{Evaluation window:} 2021Q1--2025Q4 (5 years, 20 quarterly forecasts).
+  \item \textbf{Evaluation window:} 2016Q1--2025Q4 (10 years, 40 quarterly forecasts).
   \item \textbf{Horizon:} 1-quarter-ahead point forecasts.
   \item \textbf{Estimation:} recursive expanding window.
   \item \textbf{Software:} R; OLS and Bayesian VAR estimation.
@@ -89,7 +84,7 @@
 \end{columns}
 
 \vspace{0.15cm}
-The selected variables span the canonical New-Keynesian system: aggregate demand (GDP), price stability (inflation), and financial conditions (long-term interest rate).
+The selected variables span the canonical New-Keynesian system: aggregate demand (GDP), price stability (inflation), and the monetary-policy stance (short-term interest rate).
 
 \end{frame}
 
@@ -108,7 +103,7 @@ The quarterly series capture the major macroeconomic phases of the euro era:
 
   \begin{column}{0.55\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{../output/figures_q/descriptive_plots.pdf}
+    \includegraphics[width=\linewidth]{figures_q/descriptive_plots.pdf}
   \end{column}
 
   \begin{column}{0.45\textwidth}
@@ -133,7 +128,7 @@ The quarterly series capture the major macroeconomic phases of the euro era:
 
 {\footnotesize
 \setlength{\tabcolsep}{4pt}
-\input{../output/tables_q/summary_stats_q.tex}
+\input{tables_q/summary_stats_q.tex}
 }
 
 {\footnotesize
@@ -142,7 +137,7 @@ The quarterly series capture the major macroeconomic phases of the euro era:
 
     \item \textbf{Inflation} shows moderate right-skewness, mainly reflecting the intense, though brief, post-pandemic energy price shock. The 10.1\% peak contrasts with the mildly deflationary episodes of 2009 and 2014.
 
-    \item \textbf{Long-term rate} is also mildly right-skewed. The range captures the transition from the $\sim$5--6\% rates of the early 2000s and the 2012 sovereign crisis peak, to the near-zero rates under the ECB's quantitative easing.
+    \item \textbf{Short-term rate} (3-month EURIBOR) is mildly right-skewed and platykurtic. It traces the ECB policy cycle: a $\sim$5\% pre-GFC peak (2008), the near-zero and \emph{negative}-rate era of 2015--2022 (a --0.6\% trough in 2021), and the steep 2022--23 hiking cycle.
 \end{itemize}
 }
 
@@ -158,7 +153,7 @@ The quarterly series capture the major macroeconomic phases of the euro era:
 \begin{block}{}
 \begin{columns}
   \begin{column}{0.5\textwidth}
-    \includegraphics[width=\linewidth]{../output/figures_q/distribution_plots.pdf}
+    \includegraphics[width=\linewidth]{figures_q/distribution_plots.pdf}
   \end{column}
   \begin{column}{0.5\textwidth}
     The histograms confirm the asymmetries: GDP growth has a very long left tail (COVID and GFC), while inflation is slightly right-skewed. The Q–Q plots confirm systematic deviations from normality in the tails. As we will see in Slide~\ref{slide:diagnostics}, this heavy-tailed behaviour—particularly from COVID—translates into rejections of normality for the model residuals.
@@ -171,10 +166,10 @@ The quarterly series capture the major macroeconomic phases of the euro era:
 \begin{block}{}
 \begin{columns}
   \begin{column}{0.5\textwidth}
-    \includegraphics[width=\linewidth]{../output/figures_q/scatter_corr.pdf}
+    \includegraphics[width=\linewidth]{figures_q/scatter_corr.pdf}
   \end{column}
   \begin{column}{0.5\textwidth}
-    The contemporaneous correlation between GDP growth and the long-term rate reflects the joint dynamics of the euro era, while inflation and the long-term rate are positively correlated, consistent with a Fisher-effect interpretation. The cross-correlation function shows that interest-rate movements lead GDP growth at quarterly horizons, underpinning the financial-transmission channel.
+    GDP growth and the short-term rate are only weakly correlated contemporaneously, while inflation and the short-term rate are positively correlated ($\approx 0.4$), consistent with an ECB monetary-policy reaction. The cross-correlation function shows that growth and inflation tend to \emph{lead} the short rate, identifying it as a cyclically reactive policy variable rather than a leading indicator of activity.
   \end{column}
 \end{columns}
 \end{block}
@@ -190,7 +185,7 @@ The quarterly series capture the major macroeconomic phases of the euro era:
 \begin{block}{}
 \begin{columns}
   \begin{column}{0.5\textwidth}
-    \includegraphics[width=\linewidth]{../output/figures_q/acf_pacf.pdf}
+    \includegraphics[width=\linewidth]{figures_q/acf_pacf.pdf}
   \end{column}
   \begin{column}{0.5\textwidth}
     The ACF decays slowly from a high first-order coefficient, reflecting the strong persistence of year-on-year quarterly growth rates (which mechanically overlap by three quarters). The PACF displays significant spikes at the first few lags, consistent with a low-order autoregressive process. This motivates our AR(p) and ARIMA models.
@@ -203,10 +198,10 @@ The quarterly series capture the major macroeconomic phases of the euro era:
 \begin{block}{}
 \begin{columns}
   \begin{column}{0.5\textwidth}
-    \includegraphics[width=\linewidth]{../output/figures_q/rolling_stats.pdf}
+    \includegraphics[width=\linewidth]{figures_q/rolling_stats.pdf}
   \end{column}
   \begin{column}{0.5\textwidth}
-    Rolling means (8-quarter window) highlight the secular decline of the long-term rate towards zero during 2014--2021 and the dramatic plunge in average growth during the GFC and COVID-19. Rolling standard deviation spikes precisely during these crisis episodes, warning of time-varying volatility and potential structural breaks.
+    Rolling means (8-quarter window) highlight the ECB policy cycle in the short-term rate---cuts to near-zero and below during 2012--2021, then the sharp 2022--23 tightening---and the dramatic plunge in average growth during the GFC and COVID-19. Rolling standard deviation spikes precisely during these crisis episodes, warning of time-varying volatility and potential structural breaks.
   \end{column}
 \end{columns}
 \end{block}
@@ -223,14 +218,14 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
 
 {\footnotesize
 \setlength{\tabcolsep}{5pt}
-\input{../output/tables_q/unit_roots_q.tex}
+\input{tables_q/unit_roots_q.tex}
 }
 
 \footnotesize
 \begin{itemize}
-  \item \textbf{GDP growth shows mixed formal unit-root evidence.} The ADF test does not reject a unit root at 5\%, while KPSS rejects level stationarity. However, visually and economically, year-on-year growth is mean-reverting. We proceed treating $\Delta y_t$ as $I(0)$, a standard macroeconometric choice.
+  \item \textbf{GDP growth is borderline stationary.} ADF rejects the unit root only at the 10\% level (p $=$ 0.07), while KPSS does \emph{not} reject level stationarity (p $>$ 0.10); together with its evident mean reversion this supports treating $\Delta y_t$ as $I(0)$, a standard macroeconometric choice.
 
-  \item \textbf{Inflation and the long-term rate} display high persistence, with KPSS strongly rejecting stationarity for both. Following the macroeconomic literature, we keep the variables in \textit{levels} rather than differencing them, since (a) the Bayesian VAR's Minnesota prior shrinks coefficients toward a random walk and accommodates persistent regressors, and (b) cointegration with growth is plausible and economically meaningful.
+  \item \textbf{Inflation and the short-term rate} are highly persistent: ADF fails to reject a unit root for both, and KPSS strongly rejects stationarity for the short-term rate. Following the macroeconomic literature, we keep the variables in \textit{levels} rather than differencing them, since (a) the Bayesian VAR's Minnesota prior shrinks coefficients toward a random walk and accommodates persistent regressors, and (b) cointegration with growth is plausible and economically meaningful.
 \end{itemize}
 
 \end{frame}
@@ -250,11 +245,11 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
     \setlength{\tabcolsep}{2.5pt}
     \setlength{\abovecaptionskip}{2pt}
     \setlength{\belowcaptionskip}{1pt}
-    \input{../output/tables_q/engle_granger_q.tex}
+    \input{tables_q/engle_granger_q.tex}
     \vspace{0.1cm}
-    \input{../output/tables_q/johansen_q.tex}
+    \input{tables_q/johansen_q.tex}
     \vspace{0.1cm}
-    \input{../output/tables_q/loading_matrix_q.tex}
+    \input{tables_q/loading_matrix_q.tex}
     }
   \end{column}
 
@@ -262,7 +257,7 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
     \footnotesize
     \begin{itemize}\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}
       \item The \textbf{Engle--Granger} test on the static regression residuals provides single-equation evidence. 
-      \item The \textbf{Johansen Trace} test jointly tests for the cointegration rank $r$ in the VECM representation. Depending on the chosen rank at the 5\% level, there may be limited or no strong evidence of cointegration.
+      \item The \textbf{Johansen Trace} test rejects every reduced rank at the 5\% level (full rank), pointing to a (near-)stationary system rather than reduced-rank cointegration; we therefore rely on the level VAR/BVAR rather than a VECM.
       \item Given the assignment's explicit focus on level VAR and BVAR benchmarks, and the potential rank fragility in finite samples of 100 observations, we proceed with the unrestricted level VAR and its Minnesota-shrinkage counterpart, which are robust to cointegration without explicitly imposing the VECM constraints.
     \end{itemize}
   \end{column}
@@ -286,11 +281,11 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
     \setlength{\tabcolsep}{2.5pt}
     \setlength{\abovecaptionskip}{1pt}
     \setlength{\belowcaptionskip}{1pt}
-    \input{../output/tables_q/ar_ic_q.tex}
+    \input{tables_q/ar_ic_q.tex}
     \vspace{0.1cm}
-    \input{../output/tables_q/ar2_coef_q.tex}
+    \input{tables_q/ar2_coef_q.tex}
     \vspace{0.1cm}
-    \input{../output/tables_q/var2_gdp_eq_q.tex}
+    \input{tables_q/var2_gdp_eq_q.tex}
     }
   \end{column}
 
@@ -315,7 +310,7 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
 % ============================================================
 % SLIDE 9: Optimal Model Specification
 % ============================================================
-\begin{frame}{Optimal Model Specification: Why a BVAR?}
+\begin{frame}{Why include a Bayesian VAR? (a-priori grounds)}
 \label{slide:bvar}
 
 \textbf{\footnotesize Why a Bayesian Vector Autoregression?}
@@ -323,16 +318,16 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
 \scriptsize
 \begin{enumerate}
   \item \textbf{Captures simultaneous dynamics across the New-Keynesian triplet}\\
-        The triple $(\Delta y,\,\pi,\,i)$ spans the canonical NK three-equation system. For Spain, the long-term rate reflects euro-area monetary policy and sovereign risk premia, so the model traces the transmission of financial conditions to domestic activity.
+        The triple $(\Delta y,\,\pi,\,i)$ spans the canonical NK three-equation system. For Spain, the short-term rate (3-month EURIBOR) directly reflects the euro-area monetary-policy stance, so the model traces the transmission of monetary and financial conditions to domestic activity.
 
   \item \textbf{Bayesian shrinkage addresses the estimation variance problem}\\
         With 100 quarterly observations and 21 reduced-form parameters, the unrestricted OLS VAR faces over-fitting. The Minnesota prior anchors the posterior toward a parsimonious random-walk benchmark. It preserves the multivariate cross-equation information while regularising the coefficients.
 
   \item \textbf{Rich policy diagnostics}\\
-        Impulse-response functions (Slide~\ref{slide:granger-irf}) confirm that tighter financial conditions (a positive shock to the long-term rate) reduce GDP growth over the subsequent 12 quarters, in line with theoretical priors.
+        The BVAR delivers impulse responses and variance decompositions; here the GDP-growth response to a short-rate shock (Slide~\ref{slide:granger-irf}) is small and imprecisely estimated (its 90\% band spans zero), so no robust transmission is identified in this short sample.
 
   \item \textbf{Structural-break evidence motivates robust shrinkage, not splitting}\\
-        As we will see in Slides~\ref{slide:breaks}--\ref{slide:breaks-interp}, the structural-break tests strongly reject parameter constancy at the 2020 COVID shock. However, this is an exogenous outlier rather than a fundamental regime change. The Minnesota prior naturally absorbs such large innovations without requiring a fragile time-varying-parameter specification or splitting the sample.
+        As we will see in Slide~\ref{slide:breaks}, the structural-break tests strongly reject parameter constancy at the 2020 COVID shock. However, this is an exogenous outlier rather than a fundamental regime change. The Minnesota prior naturally absorbs such large innovations without requiring a fragile time-varying-parameter specification or splitting the sample.
 \end{enumerate}
 
 \end{frame}
@@ -352,12 +347,12 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
     \setlength{\tabcolsep}{1.5pt}
     \setlength{\abovecaptionskip}{2pt}
     \setlength{\belowcaptionskip}{1pt}
-    \input{../output/tables_q/chow_tests_q.tex}
+    \input{tables_q/chow_tests_q.tex}
     \vspace{0.05cm}
-    \input{../output/tables_q/unknown_breaks_q.tex}
+    \input{tables_q/unknown_breaks_q.tex}
     }
     \vspace{0.1cm}
-    \includegraphics[width=\linewidth]{../output/figures_q/qlr_cusum_plot.pdf}
+    \includegraphics[width=\linewidth]{figures_q/qlr_cusum_plot.pdf}
   \end{column}
 
   \begin{column}{0.5\textwidth}
@@ -388,25 +383,25 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
 
 \begin{columns}
   \begin{column}{0.55\textwidth}
-    \includegraphics[width=\linewidth]{../output/figures_q/residual_plot.pdf}
+    \includegraphics[width=\linewidth]{figures_q/residual_plot.pdf}
     
     {\fontsize{4.8}{5.3}\selectfont
     \setlength{\tabcolsep}{1.2pt}
     \setlength{\abovecaptionskip}{1pt}
     \setlength{\belowcaptionskip}{1pt}
-    \input{../output/tables_q/var2_diagnostics_q.tex}
+    \input{tables_q/var2_diagnostics_q.tex}
     }
   \end{column}
 
   \begin{column}{0.45\textwidth}
     \scriptsize
-    The \textbf{Portmanteau} test checks for residual autocorrelation; failing to reject indicates two lags adequately capture the joint dynamics. The \textbf{Jarque--Bera} test typically rejects normality due to the heavy tails from the COVID-19 outlier; while this matters for exact finite-sample inference, it does not destroy point-forecast consistency. The \textbf{ARCH} test checks for conditional heteroskedasticity. The residuals fluctuate around zero with no visible pattern beyond the COVID spike, and the ACF shows no significant residual structure.
+    The VAR(2) residual diagnostics all reject their nulls: the \textbf{Portmanteau} test finds residual autocorrelation (p $=$ 0.003), \textbf{Jarque--Bera} rejects normality (heavy tails from the COVID-19 outlier), and the multivariate \textbf{ARCH} test detects conditional heteroskedasticity (p $<$ 0.001). These rejections are driven overwhelmingly by the 2020 observations; they caution against an asymptotic reading of the VAR(2) and foreshadow its weak out-of-sample performance, though point-forecast consistency is not destroyed.
 
     {\fontsize{5}{5.5}\selectfont
     \setlength{\tabcolsep}{1.5pt}
     \setlength{\abovecaptionskip}{1pt}
     \setlength{\belowcaptionskip}{1pt}
-    \input{../output/tables_q/companion_roots_q.tex}
+    \input{tables_q/companion_roots_q.tex}
     }
     \vspace{0.05cm}
     \scriptsize All roots lie strictly inside the unit circle: the VAR(2) is covariance-stationary.
@@ -431,16 +426,16 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
     \setlength{\tabcolsep}{2.5pt}
     \setlength{\abovecaptionskip}{2pt}
     \setlength{\belowcaptionskip}{1pt}
-    \input{../output/tables_q/granger_causality_q.tex}
+    \input{tables_q/granger_causality_q.tex}
     }
     \scriptsize
-    Block Granger causality tests probe predictive relationships. We check if the long-term rate forecasts the joint vector of GDP and inflation (financial-transmission channel), if inflation forecasts the others (Phillips-curve), and if growth predicts nominal variables (demand-pull). Despite limited power, the evidence is broadly supportive of standard monetary VAR linkages.
+    Block Granger causality tests probe predictive relationships. The short-term rate does \emph{not} Granger-cause the (GDP, inflation) block (p $\approx$ 0.90), and growth does not cause the nominal block (p $\approx$ 0.69); only inflation shows marginal predictive content for the others (p $\approx$ 0.07). The multivariate linkages are therefore weak in this sample---consistent with the limited out-of-sample gains from the VAR/BVAR.
   \end{column}
 
   \begin{column}{0.45\textwidth}
-    \includegraphics[width=\linewidth]{../output/figures_q/bvar_irf.pdf}
+    \includegraphics[width=\linewidth]{figures_q/bvar_irf.pdf}
     \scriptsize
-    BVAR(2) impulse responses over a 12-quarter horizon. The response of GDP growth to a 1\,$\sigma$ positive shock in the long-term rate (tighter financial conditions) shows a gradual decline, consistent with conventional transmission lags. The own-shock response decays smoothly toward zero, reflecting the stationary autoregressive dynamics.
+    BVAR(2) impulse responses over a 12-quarter horizon. The GDP-growth response to a 1\,$\sigma$ short-rate shock is small and statistically indistinguishable from zero (the 90\% band spans zero at every horizon), so no robust transmission is identified. The own-shock response decays smoothly toward zero, reflecting the stationary autoregressive dynamics.
   \end{column}
 \end{columns}
 
@@ -456,14 +451,14 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.72\linewidth]{../output/figures_q/forecast_plot.pdf}
+  \includegraphics[width=0.72\linewidth]{figures_q/forecast_plot.pdf}
 \end{figure}
 
 \vspace{0.05cm}
 
 {\footnotesize
 \setlength{\tabcolsep}{4pt}
-\input{../output/tables_q/forecast_accuracy_q.tex}
+\input{tables_q/forecast_accuracy_q.tex}
 }
 
 \end{frame}
@@ -484,24 +479,26 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
     \setlength{\tabcolsep}{1.2pt}
     \setlength{\abovecaptionskip}{1pt}
     \setlength{\belowcaptionskip}{1pt}
-    \input{../output/tables_q/dm_tests_q.tex}
+    \input{tables_q/dm_tests_q.tex}
     \vspace{0.1cm}
-    \input{../output/tables_q/predictive_intervals_q.tex}
+    \input{tables_q/predictive_intervals_q.tex}
     }
+
+    \vspace{0.5cm}
+    \scriptsize \textbf{Cross-frequency check.} At \emph{annual} frequency (1960--2025, 10-year window), where COVID enters as a single annual observation rather than a $-21.5\%$ quarterly crash, the multivariate BVAR(2) is comparatively much stronger. The contrast shows that the quarterly ranking here is driven by the 2020 quarters in the evaluation window, which disproportionately penalise the richer models. \textbf{Note}: the annual analysis lives in a separate \texttt{.qmd} that replicates the same procedures.
   \end{column}
 
   \begin{column}{0.38\textwidth}
     \tiny
     \begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
-      \item \textbf{Point accuracy.} The models are ranked by RMSE and MAE over the 20-quarter (5-year) evaluation window. The Combined forecast and BVAR(2) perform best, successfully exploiting multivariate information without overfitting like the OLS VAR(2).
+      \item \textbf{Point accuracy.} Over the 40-quarter (10-year) window the parsimonious \textbf{ARIMA} forecasts best---the only model to beat a random walk (Theil's $U<1$)---followed by the equal-weight \textbf{Combined} forecast. The richer \textbf{VAR(2)} and \textbf{BVAR(2)} rank last, heavily penalised by the 2020 COVID quarters inside the evaluation window.
 
-      \item \textbf{Statistical significance.} Negative DM statistics indicate lower expected squared loss for the first model. While the ranking is clear, the 20-quarter evaluation window provides limited power to reject equal predictive accuracy, so accuracy gains are economically meaningful if not always statistically decisive.
+      \item \textbf{Statistical significance.} No pairwise Diebold--Mariano test rejects equal predictive accuracy ($p>0.28$ throughout): with 40 one-quarter forecasts and a few extreme COVID losses inflating the loss variance, the differences are not statistically decisive.
 
-      \item \textbf{Interval calibration.} The BVAR(2) generally provides robust empirical coverage of its 90\% predictive interval, striking the right balance. The combination of competitive RMSE/MAE and honest interval calibration confirms that the \textbf{BVAR(2)} is the preferred individual specification for this quarterly data problem.
-
-      \item \textbf{Cross-frequency check.} The annual model (1960--2025, 10-year window) also crowns BVAR(2) as the best individual model, with similarly inconclusive DM tests and $\approx$80\% empirical coverage. Here the equal-weight \textbf{Combined} forecast adds a further edge---a diversification gain absent from the annual comparison.
+      \item \textbf{Interval calibration.} Empirical coverage is similar across models ($\approx$0.85), but the BVAR(2) attains it only with much wider intervals. \textbf{No single model dominates:} ARIMA and the combination are most accurate, while the BVAR(2)---our \emph{a-priori} multivariate benchmark---is destabilised by the COVID observations, echoing Lenza--Primiceri (2022) and Carriero et al.\ (2024) on BVARs after March 2020.
     \end{itemize}
   \end{column}
+  
 \end{columns}
 
 \end{frame}
@@ -514,22 +511,29 @@ Table~\ref{tab:tbl-unit-roots-q} reports ADF (null: unit root) and KPSS (null: l
 \begin{block}{Main conclusions}
 \begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
   \item Spain's GDP growth exhibits strong short-run persistence, but is heavily disrupted by the COVID-19 shock.
-  \item Inflation and long-term interest rate lags jointly improve the forecasting performance within a BVAR framework, consistent with a delayed macro-financial transmission.
-  \item The BVAR(2) outperforms the required AR(2) and VAR(2) benchmarks by RMSE/MAE; an equal-weight forecast combination performs best or competitively overall.
-  \item \textbf{Caveat:} the ranking is numerically clear but not statistically decisive under Diebold--Mariano tests; diagnostics warn against over-interpreting OLS assumptions (e.g.\ normality) given extreme crisis observations, so the strongest claim is relative forecasting performance, not structural causality.
+  \item Adding inflation and the short-term rate does \emph{not} improve out-of-sample accuracy: the multivariate VAR/BVAR are destabilised by COVID (only inflation is a marginal in-sample Granger predictor).
+  \item Over the required 10-year window (which contains the COVID-19 crash), the parsimonious \textbf{ARIMA} and the equal-weight \textbf{combination} forecast most accurately; the VAR(2) and BVAR(2) lag, penalised by the 2020 outliers.
+  \item \textbf{Caveat:} no Diebold--Mariano test rejects equal accuracy (the ranking is suggestive); excluding COVID the five models are near-tied (RMSE 4.2--4.5), and the VAR(2) residuals reject normality, no-autocorrelation and no-ARCH---cautioning against an asymptotic reading.
 \end{itemize}
 \end{block}
 
 \textbf{References}
 \begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
     \item Bańbura, M., Giannone, D., \& Reichlin, L. (2010). Large Bayesian vector autoregressions. \textit{Journal of Applied Econometrics}, 25(1), 71--92.
+    
     \item Litterman, R. B. (1986). Forecasting with Bayesian vector autoregressions - five years of experience. \textit{Journal of Business \& Economic Statistics}, 4(1), 25--38.
-    \item Eurostat (2024). \textit{Macroeconomic and Financial Data for Spain} (ESdata.xlsx).
+    
+    \item Barigozzi, M., Lissona, C., \& Tonni, L. (2025). Large datasets for the Euro Area and its member countries and the dynamic effects of the common monetary policy. \textit{arXiv preprint} arXiv:2410.05082v2.
+    
+    \item Lenza, M., \& Primiceri, G. E. (2022). How to estimate a vector autoregression after March 2020. \textit{Journal of Applied Econometrics}, 37(4), 688--699.
+
+    \item Carriero, A., Clark, T. E., Marcellino, M., \& Mertens, E. (2024). Addressing COVID-19 outliers in BVARs with stochastic volatility. \textit{The Review of Economics and Statistics}, 106(5), 1403--1417.
+
 \end{itemize}
 
 \vspace{0.1cm}
 
-\textbf{Use of Large Language Models.} Per the assignment guidelines, we declare that an LLM (Anthropic Claude) was used as an assistant for: (i) drafting and revising the prose of this report; (ii) suggesting the sequence of diagnostic and forecasting checks; and (iii) refactoring R code for clarity. All modelling choices, parameter interpretations, and substantive conclusions were verified by the author.
+\textbf{AI Disclaimer}: we declare we have employed a number of models, namely Claude Opus 4.7, Sonnet 4.6, and OpenAI ChatGPT for the following purposes: (i) drafting and revising the prose of this report; (ii) suggesting the sequence of diagnostic and forecasting checks; and (iii) refactoring R code for clarity. All modelling choices, parameter interpretations, and substantive conclusions were decided and written by the authors.
 
 \end{frame}
 

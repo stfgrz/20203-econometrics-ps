@@ -128,14 +128,15 @@ by the assignment, the analysis proceeds in six steps: (i) descriptive analysis 
 variables; (ii) a discussion of alternative specifications; (iii) diagnostic checks on
 the preferred model; (iv) tests of economic hypotheses on the model parameters;
 (v) a one-step-ahead pseudo-out-of-sample forecasting exercise over the last
-ten quarters of the sample; and (vi) a comparison with the AR(2) and VAR(2) benchmarks
+ten years (40 quarters) of the sample; and (vi) a comparison with the AR(2) and VAR(2) benchmarks
 prescribed by the brief, where the VAR also includes year-on-year HICP inflation
-and the long-term interest rate.
+and a short-term interest rate.
 
 We work with quarterly observations from the **Eurostat** data provided in the
-ESdata.xlsx file, which contains seasonally-adjusted quarterly real GDP, the
-monthly HICP index (aggregated to quarterly averages), and the monthly long-term
-interest rate (aggregated to quarterly averages). We restrict the sample to
+ESdata.xlsx file, which contains seasonally-adjusted quarterly real GDP and the
+monthly HICP index (aggregated to quarterly averages). The short-term interest rate
+is the 3-month EURIBOR (the euro-area money-market rate), sourced from the ECB Data
+Portal and aggregated to quarterly averages. We restrict the sample to
 **2001Q1--2025Q4** — the period for which year-on-year growth rates can be computed
 from the available quarterly GDP series (which begins in 2000Q1). The resulting sample
 provides 100 quarterly year-on-year growth observations, sufficient
@@ -152,16 +153,28 @@ raw$year  <- as.integer(format(raw$Time, "%Y"))
 raw$month <- as.integer(format(raw$Time, "%m"))
 raw$quarter <- ceiling(raw$month / 3)
 
-# Aggregate monthly series to quarterly averages
+# Short-term interest rate: 3-month EURIBOR, the euro-area money-market rate
+# faced by Spain since euro adoption (the brief's "short term interest rate").
+# Monthly series from the ECB Data Portal (FM.M.U2.EUR.RT.MM.EURIBOR3MD_.HSTA),
+# stored locally for reproducibility and aggregated to quarterly averages.
+euribor <- read.csv("../data/euribor3m_monthly.csv", stringsAsFactors = FALSE)
+euribor$year    <- as.integer(substr(euribor$Time, 1, 4))
+euribor$month   <- as.integer(substr(euribor$Time, 6, 7))
+euribor$quarter <- ceiling(euribor$month / 3)
+euribor_q <- euribor |>
+    dplyr::group_by(year, quarter) |>
+    dplyr::summarise(STIR = mean(EURIBOR3M, na.rm = TRUE), .groups = "drop")
+
+# Aggregate monthly series to quarterly averages and merge the short rate
 q_agg <- raw |>
     dplyr::group_by(year, quarter) |>
     dplyr::summarise(
         GDP  = mean(GDP_ES, na.rm = TRUE),
         HICP = mean(HICPOV_ES, na.rm = TRUE),
-        LTIR = mean(LTIRT_ES, na.rm = TRUE),
         .groups = "drop"
     ) |>
     dplyr::filter(!is.nan(GDP) & !is.na(GDP)) |>
+    dplyr::left_join(euribor_q, by = c("year", "quarter")) |>
     dplyr::arrange(year, quarter)
 
 # Compute year-on-year growth rates (4-quarter lag for quarterly data)
@@ -173,7 +186,7 @@ q_agg <- q_agg |>
 
 # Working sample: drop first 4 quarters (no YoY growth) and require all series
 spain <- q_agg |>
-    dplyr::filter(!is.na(gdp_growth) & !is.na(infl) & !is.na(LTIR))
+    dplyr::filter(!is.na(gdp_growth) & !is.na(infl) & !is.na(STIR))
 
 # Create a decimal date for plotting: year + (quarter - 1)/4
 spain <- spain |>
@@ -187,7 +200,7 @@ n_obs      <- nrow(spain)
 
 ts_gdp    <- ts(spain$gdp_growth, start = c(start_year, start_qtr), frequency = 4)
 ts_infl   <- ts(spain$infl, start = c(start_year, start_qtr), frequency = 4)
-ts_strate <- ts(spain$LTIR, start = c(start_year, start_qtr), frequency = 4)
+ts_strate <- ts(spain$STIR, start = c(start_year, start_qtr), frequency = 4)
 
 var_data <- cbind(
     GDP_Growth    = ts_gdp,
@@ -199,8 +212,8 @@ var_data <- cbind(
 The working sample covers `r start_year`Q`r start_qtr`--`r end_year`Q`r end_qtr` (`r n_obs` quarterly
 observations). The three variables are: year-on-year real GDP growth
 ($\Delta y_t = 100 \cdot (Y_t / Y_{t-4} - 1)$, percent), year-on-year HICP inflation
-($\pi_t$, percent), and the long-term nominal interest rate ($i_t$, percent,
-quarterly average of monthly data from Eurostat).
+($\pi_t$, percent), and a short-term nominal interest rate ($i_t$, percent --- the
+3-month EURIBOR, quarterly average of monthly ECB data).
 
 # Descriptive Analysis
 
@@ -208,14 +221,14 @@ quarterly average of monthly data from Eurostat).
 
 ```{r descriptive-plots, fig.height=6.5}
 plot_df <- spain |>
-    dplyr::select(date, gdp_growth, infl, LTIR) |>
+    dplyr::select(date, gdp_growth, infl, STIR) |>
     tidyr::pivot_longer(-date, names_to = "series", values_to = "value") |>
     dplyr::mutate(series = factor(series,
-        levels = c("gdp_growth", "infl", "LTIR"),
+        levels = c("gdp_growth", "infl", "STIR"),
         labels = c(
             "Real GDP growth (%, y/y)",
             "HICP inflation (%, y/y)",
-            "Long-term interest rate (%)"
+            "Short-term interest rate (%)"
         )
     ))
 
@@ -228,7 +241,7 @@ events <- tibble::tibble(
 series_pal <- c(
     "Real GDP growth (%, y/y)"     = unname(pal_main["GDP"]),
     "HICP inflation (%, y/y)"      = unname(pal_main["INF"]),
-    "Long-term interest rate (%)"  = unname(pal_main["RATE"])
+    "Short-term interest rate (%)"  = unname(pal_main["RATE"])
 )
 
 p_desc <- ggplot(plot_df, aes(date, value, colour = series, fill = series)) +
@@ -267,9 +280,11 @@ euro era. GDP growth is centered around two percent on average but with two pron
 contractions: the global financial crisis (2008--09 and the subsequent euro-area
 sovereign-debt crisis of 2011--13) and the COVID-19 collapse of 2020Q2 (--21.5 percent
 year-on-year). Inflation fluctuates between --1 and +10 percent, with the post-2021
-energy shock briefly pushing it to double digits. The long-term interest rate declined
-steadily from around 5--6 percent in the early 2000s to record lows near zero during
-the ECB's unconventional policy period (2014--21), before rising again in 2022--23.
+energy shock briefly pushing it to double digits. The short-term interest rate (3-month
+EURIBOR) tracks the ECB policy cycle: around 4--5 percent before the GFC (peaking near
+5 percent in 2008), cut sharply thereafter, pushed below zero during the 2015--2022
+negative-rate era (a --0.6 percent trough in 2021), and lifted back above 3.5 percent by
+the steep 2022--23 hiking cycle before easing in 2024--25.
 
 ## Summary statistics
 
@@ -278,7 +293,7 @@ desc <- spain |>
     dplyr::select(
         `GDP growth (%)` = gdp_growth,
         `Inflation (%)` = infl,
-        `LT rate (%)` = LTIR
+        `ST rate (%)` = STIR
     ) |>
     tidyr::pivot_longer(everything(), names_to = "Variable", values_to = "x") |>
     dplyr::group_by(Variable) |>
@@ -297,19 +312,19 @@ ftab(desc, digits = 2, caption = "Summary statistics, 2001Q1--2025Q4 (quarterly)
 ```
 
 GDP growth has heavy left-tail behaviour (negative skew, excess kurtosis above
-three) driven by the GFC and COVID outliers. Inflation and the long-term rate are
-moderately right-skewed, reflecting the pre-crisis higher-rate regime and the
-post-2021 energy-price spike.
+three) driven by the GFC and COVID outliers. Inflation and the short-term rate are
+mildly right-skewed (the rate is also platykurtic), reflecting the long stretch of
+near-zero/negative rates punctuated by the pre-GFC and post-2022 high-rate phases.
 
 ## Marginal distributions
 
 ```{r distribution-plots, fig.height=4.2}
 dist_df <- spain |>
-    dplyr::select(gdp_growth, infl, LTIR) |>
+    dplyr::select(gdp_growth, infl, STIR) |>
     tidyr::pivot_longer(everything(), names_to = "series", values_to = "value") |>
     dplyr::mutate(series = factor(series,
-        levels = c("gdp_growth", "infl", "LTIR"),
-        labels = c("GDP growth", "Inflation", "LT rate")
+        levels = c("gdp_growth", "infl", "STIR"),
+        labels = c("GDP growth", "Inflation", "ST rate")
     ))
 
 mean_df <- dist_df |>
@@ -356,7 +371,7 @@ the diagnostic battery below.
 
 ```{r scatter-corr, fig.height=4.2}
 pair_df <- spain |>
-    dplyr::select(gdp_growth, infl, LTIR)
+    dplyr::select(gdp_growth, infl, STIR)
 
 cor_mat <- round(cor(pair_df), 2)
 cor_df <- as.data.frame(as.table(cor_mat)) |>
@@ -368,13 +383,13 @@ p_corr <- ggplot(cor_df, aes(Var1, Var2, fill = Correlation)) +
               size = 3.6, colour = "grey15") +
     scale_fill_gradient2(low = "#3a76b8", mid = "grey95", high = "#c0504d",
                         midpoint = 0, limits = c(-1, 1)) +
-    scale_x_discrete(labels = c("GDP growth", "Inflation", "LT rate")) +
-    scale_y_discrete(labels = c("GDP growth", "Inflation", "LT rate")) +
+    scale_x_discrete(labels = c("GDP growth", "Inflation", "ST rate")) +
+    scale_y_discrete(labels = c("GDP growth", "Inflation", "ST rate")) +
     coord_fixed() +
     labs(title = "Contemporaneous correlation matrix",
          x = NULL, y = NULL, fill = "\u03c1")
 
-# Cross-correlation function: GDP growth vs long-term rate
+# Cross-correlation function: GDP growth vs short-term rate
 ccf_obj <- ccf(ts_strate, ts_gdp, lag.max = 12, plot = FALSE)
 ccf_df <- data.frame(lag = as.numeric(ccf_obj$lag),
                      acf = as.numeric(ccf_obj$acf))
@@ -387,8 +402,8 @@ p_ccf <- ggplot(ccf_df, aes(lag, acf)) +
     geom_segment(aes(xend = lag, yend = 0), colour = unname(pal_main["GDP"]),
                  linewidth = 0.9) +
     geom_point(colour = unname(pal_main["GDP"]), size = 1.6) +
-    labs(title = "CCF: LT rate (lead) vs. GDP growth",
-         subtitle = "Negative lag k: LT rate leads GDP growth by k quarters",
+    labs(title = "CCF: ST rate (lead) vs. GDP growth",
+         subtitle = "Negative lag k: ST rate leads GDP growth by k quarters",
          x = "Lag (quarters)", y = "Cross-correlation")
 
 p_scatter_corr <- gridExtra::arrangeGrob(p_corr, p_ccf, nrow = 1, widths = c(0.45, 0.55))
@@ -397,11 +412,12 @@ dir.create("../output/figures_q", showWarnings = FALSE, recursive = TRUE)
 ggsave("../output/figures_q/scatter_corr.pdf", plot = p_scatter_corr, device = "pdf", width = 9, height = 4.2, dpi = 300, bg = "transparent")
 ```
 
-The contemporaneous correlation between GDP growth and the long-term rate reflects the
-joint dynamics of the euro era, while inflation and the long-term rate are positively
-correlated — consistent with a Fisher-effect interpretation. The cross-correlation
-function (right panel) shows the lead-lag relationship between interest-rate movements
-and GDP growth at quarterly horizons.
+GDP growth and the short-term rate are only weakly correlated contemporaneously, whereas
+inflation and the short-term rate are positively correlated (about 0.4) — consistent with
+an ECB monetary-policy reaction in which the money-market rate rises with euro-area
+inflation. The cross-correlation function (right panel) indicates that growth and inflation
+tend to *lead* the short rate rather than the reverse, reinforcing the reading of the
+policy rate as a cyclically reactive variable.
 
 ## Rolling-window moments
 
@@ -416,7 +432,7 @@ roll_df <- spain |>
                                     fill = NA, align = "right"),
         infl_mean  = zoo::rollapply(infl, window, mean,
                                     fill = NA, align = "right"),
-        rate_mean  = zoo::rollapply(LTIR, window, mean,
+        rate_mean  = zoo::rollapply(STIR, window, mean,
                                     fill = NA, align = "right")
     )
 
@@ -448,9 +464,9 @@ dir.create("../output/figures_q", showWarnings = FALSE, recursive = TRUE)
 ggsave("../output/figures_q/rolling_stats.pdf", plot = p_rolling, device = "pdf", width = 9, height = 4.2, dpi = 300, bg = "transparent")
 ```
 
-The rolling means highlight the secular decline of the long-term interest rate from
-the 5--6 percent range of the early 2000s to near-zero in the post-2014 ECB
-unconventional-policy window, while average GDP growth drops sharply during the GFC
+The rolling means highlight the ECB policy cycle in the short-term rate — high before the
+GFC, cut to near-zero and then negative through the 2015--2022 window, and sharply higher
+in the 2022--23 tightening — while average GDP growth drops sharply during the GFC
 and the COVID period. The rolling standard deviation of growth spikes dramatically
 during both episodes — direct evidence of time-varying second moments and a
 preview of the structural-stability tests reported below.
@@ -492,7 +508,7 @@ adf <- function(x) suppressWarnings(tseries::adf.test(x, alternative = "stationa
 kpss <- function(x) suppressWarnings(tseries::kpss.test(x, null = "Level"))
 
 ur_tab <- data.frame(
-    Variable = c("GDP growth", "Inflation", "LT rate"),
+    Variable = c("GDP growth", "Inflation", "ST rate"),
     `ADF stat` = c(adf(ts_gdp)$statistic, adf(ts_infl)$statistic, adf(ts_strate)$statistic),
     `ADF p-value` = c(adf(ts_gdp)$p.value, adf(ts_infl)$p.value, adf(ts_strate)$p.value),
     `KPSS stat` = c(kpss(ts_gdp)$statistic, kpss(ts_infl)$statistic, kpss(ts_strate)$statistic),
@@ -506,7 +522,7 @@ The stationarity evidence for year-on-year GDP growth at quarterly frequency is
 assessed jointly by the ADF and KPSS tests. Following the macroeconomic
 literature, we keep the variables in levels rather than differencing them,
 since (a) the Bayesian VAR's Minnesota prior shrinks coefficients toward a
-random walk and is robust to persistent regressors, and (b) the long-term
+random walk and is robust to persistent regressors, and (b) the short-term
 interest rate and inflation are theoretically bounded and cointegration
 with growth is plausible.
 
@@ -680,7 +696,7 @@ Two practical implications follow for the modelling strategy:
 # Cointegration Analysis
 
 Although GDP growth is treated as $I(0)$ (Section 3.5), inflation and the
-long-term interest rate behave as persistent, near-unit-root processes over our
+short-term interest rate behave as persistent, near-unit-root processes over our
 sample. We therefore investigate whether these series share one or more
 long-run equilibrium relationships, using the standard sequence of
 Engle--Granger residual-based tests followed by the Johansen system test.
@@ -749,11 +765,13 @@ governs the speed at which each variable corrects deviations from the
 long-run equilibrium $\beta' \mathbf{x}_{t-1}$.
 
 ```{r vecm-loadings}
-chosen_r <- as.integer(sum(joh@teststat > joh@cval[, "5pct"]))
+n_reject <- as.integer(sum(joh@teststat > joh@cval[, "5pct"]))
+K_var    <- ncol(var_data)
+full_rank <- n_reject >= K_var
+# Rank used to estimate the VECM, capped at the maximal reduced rank (K - 1).
+chosen_r <- min(max(n_reject, 0L), K_var - 1L)
 loadings_summary <- NA_character_
-vecm_rank_text <- "At this threshold we do not reject rank zero, so no cointegrating vector is estimated and a VECM correction term is not included."
 loadings_text <- "No loading-matrix adjustment summary is reported because r = 0."
-conclusion_cointegration_text <- "no 5% evidence of cointegration among the three series."
 
 if (chosen_r > 0L) {
   vecm <- urca::cajorls(joh, r = chosen_r)
@@ -761,7 +779,7 @@ if (chosen_r > 0L) {
   beta_hat <- as.matrix(vecm$beta)
   colnames(beta_hat) <- paste0("ECT", seq_len(chosen_r))
   alpha_hat <- t(coef(vecm$rlm)[paste0("ect", seq_len(chosen_r)), , drop = FALSE])
-  rownames(alpha_hat) <- c("GDP growth", "Inflation", "LT rate")
+  rownames(alpha_hat) <- c("GDP growth", "Inflation", "ST rate")
   colnames(alpha_hat) <- paste0("ECT", seq_len(chosen_r))
 
   dominant_eq <- apply(abs(alpha_hat), 2, function(x) rownames(alpha_hat)[which.max(x)])
@@ -769,13 +787,7 @@ if (chosen_r > 0L) {
     paste0(colnames(alpha_hat), " \u2192 ", dominant_eq),
     collapse = "; "
   )
-  vecm_rank_text <- "Given r > 0, we estimate the VECM and report the cointegrating vector(s) \u03b2 and loading matrix \u03b1 in the preceding output."
   loadings_text <- paste0("The loading matrix suggests the strongest adjustment in: ", loadings_summary, ".")
-  conclusion_cointegration_text <- paste0(
-    "evidence for ", chosen_r, " cointegrating ",
-    if (chosen_r == 1L) "relationship" else "relationships",
-    " among the three series."
-  )
 
   ftab(beta_hat, digits = 3,
        caption = paste0("Cointegrating vector(s) \u03b2  (rank r = ", chosen_r, ")"),
@@ -783,6 +795,26 @@ if (chosen_r > 0L) {
   ftab(alpha_hat, digits = 3,
        caption = "Loading (adjustment) matrix \u03b1 \u2014 rows: equation, columns: ECT",
        latex_file = "loading_matrix_q")
+}
+
+if (full_rank) {
+  vecm_rank_text <- paste0(
+    "At the 5% level the trace test rejects every reduced rank down to full rank ",
+    "(the r <= ", K_var - 1L, " rejection is marginal: ",
+    sprintf("%.2f", joh@teststat[1]), " vs. ", sprintf("%.2f", joh@cval[1, "5pct"]),
+    "), pointing to a (near-)stationary, full-rank system rather than reduced-rank ",
+    "cointegration; we report the maximal-rank (r = ", chosen_r,
+    ") VECM for completeness but rely on the unrestricted level VAR.")
+  conclusion_cointegration_text <- "a full-rank (near-stationary) system at the 5% level rather than classic reduced-rank cointegration, which supports the level-VAR/BVAR approach."
+} else if (chosen_r > 0L) {
+  vecm_rank_text <- "Given r > 0, we estimate the VECM and report the cointegrating vector(s) \u03b2 and loading matrix \u03b1 in the preceding output."
+  conclusion_cointegration_text <- paste0(
+    "evidence for ", chosen_r, " cointegrating ",
+    if (chosen_r == 1L) "relationship" else "relationships",
+    " among the three series.")
+} else {
+  vecm_rank_text <- "At the 5% level we do not reject rank zero, so no cointegrating vector is estimated and a VECM correction term is not included."
+  conclusion_cointegration_text <- "no 5% evidence of cointegration among the three series."
 }
 ```
 
@@ -805,7 +837,7 @@ and its Minnesota-shrinkage counterpart for forecasting comparisons.
 This section discusses the alternative specifications considered. The univariate
 candidates capture only the autoregressive dynamics of growth; the multivariate
 candidates additionally exploit the joint dynamics with inflation and the
-long-term interest rate.
+short-term interest rate.
 
 ## Univariate models: AR(2) and ARIMA
 
@@ -897,9 +929,9 @@ open economy in EMU.** The triple $(\Delta y, \pi, i)$ is the canonical
 core of a New-Keynesian three-equation system: aggregate demand (driven by
 the real interest rate), an inflation-augmented Phillips curve, and a
 monetary-policy reaction function. For Spain — a price-taker in EMU since
-1999 — the long-term rate reflects both euro-area monetary policy and
-sovereign risk premia, and adding it lets the model trace the transmission
-of financial conditions to domestic activity. The cross-correlation
+1999 — the short-term rate (3-month EURIBOR) directly reflects the euro-area
+monetary-policy stance, and adding it lets the model trace the transmission
+of monetary and financial conditions to domestic activity. The cross-correlation
 analysis (Section 3.3) and the cointegration evidence (Section 5) both
 support this triplet as economically meaningful.
 
@@ -927,7 +959,7 @@ primarily at the COVID date, and that episode is best treated as an
 exogenous outlier rather than a regime change. There is therefore no case
 for switching, time-varying-parameter, or split-sample specifications.
 
-In short, the BVAR(2) is preferred because it is *economically complete*
+In short, the BVAR(2) is well motivated *a priori* because it is *economically complete*
 (it spans the demand--supply--policy triangle), *dynamically adequate*
 (two lags cover the relevant transmission horizon), *statistically
 disciplined* (Minnesota shrinkage delivers favourable bias--variance
@@ -1050,7 +1082,7 @@ gtab <- data.frame(
 ftab(gtab, digits = 3, caption = "Block Granger-causality tests (quarterly)", latex_file = "granger_causality_q")
 ```
 
-The first row tests whether the long-term interest rate has predictive
+The first row tests whether the short-term interest rate has predictive
 content for the joint vector of GDP growth and inflation: a rejection is
 consistent with a working financial-transmission channel. The second row
 asks the symmetric Phillips-curve question: do past values of inflation help
@@ -1059,8 +1091,8 @@ whether real activity itself drives the nominal block, as one would
 expect under cyclical demand-pull pressures.
 
 The pattern of $p$-values is interpreted in the context of the quarterly
-euro-area dynamics, where the long-term rate reflects both monetary policy
-and sovereign risk premia. We interpret the joint evidence as broadly
+euro-area dynamics, where the short-term rate reflects the ECB's monetary-policy
+stance. We interpret the joint evidence as broadly
 supportive of both a Phillips-curve-type relationship and a financial
 conditions channel, while flagging that with `r n_obs` quarterly
 observations the tests have limited power and the residual diagnostics
@@ -1068,8 +1100,8 @@ above caution against a purely asymptotic reading.
 
 ## Impulse responses from the BVAR
 
-We hypothesise that an unexpected positive shock to the long-term interest rate
-(tighter financial conditions) reduces GDP growth, and that a positive growth
+We hypothesise that an unexpected positive shock to the short-term interest rate
+(a contractionary monetary-policy surprise) reduces GDP growth, and that a positive growth
 shock generates inflationary pressure over time.
 
 ```{r bvar-irf, fig.height=4}
@@ -1103,12 +1135,12 @@ the autoregressive dynamics of the series.
 # One-step-ahead Forecasting Evaluation
 
 We evaluate the four models on a pseudo-out-of-sample exercise covering the
-last ten quarters of the sample. Forecasts are generated with an **expanding
-window**: at each origin $T = N - 10, \ldots, N - 1$, each model is re-estimated
+last ten years (40 quarters) of the sample. Forecasts are generated with an **expanding
+window**: at each origin $T = N - 40, \ldots, N - 1$, each model is re-estimated
 on data up to $T$ and used to predict $\Delta y_{T+1}$.
 
 ```{r forecasting-loop, results='hide'}
-h_out   <- 20
+h_out   <- 40
 n_total <- nrow(var_data)
 n_train <- n_total - h_out
 ci_lvl  <- 0.90
@@ -1193,7 +1225,7 @@ metrics <- data.frame(
 metrics <- metrics[order(metrics$RMSE), ]
 ftab(metrics,
     digits = 3,
-    caption = "1-step-ahead forecast accuracy (last 10 quarters)",
+    caption = "1-step-ahead forecast accuracy (last 10 years, 40 quarters)",
     latex_file = "forecast_accuracy_q"
 )
 ```
@@ -1227,7 +1259,7 @@ ftab(dm_df,
 ```
 
 Negative DM statistics indicate the first model has lower expected squared
-loss. The accuracy differences among models are assessed in the ten-quarter
+loss. The accuracy differences among models are assessed in the forty-quarter (ten-year)
 evaluation window.
 
 ## Visual comparison with predictive intervals
@@ -1306,7 +1338,7 @@ keep <- !(dates_oos >= 2020.0 & dates_oos <= 2020.75)
 if (sum(!keep) > 0) {
     err_x <- (forecasts - actuals)[keep, , drop = FALSE]
     metrics_x <- data.frame(
-        Model = c("BVAR(2)", "VAR(2)", "AR(2)", "ARIMA (BIC)"),
+        Model = colnames(err_x),
         RMSE  = sqrt(colMeans(err_x^2)),
         MAE   = colMeans(abs(err_x))
     )
@@ -1327,28 +1359,29 @@ subsection) — together inform the ranking of the four candidate
 specifications.
 
 **Point accuracy.** The models are ranked by RMSE and MAE over the
-ten-quarter evaluation window. The BVAR(2) benefits from Minnesota
-shrinkage, which regularises the large number of parameters relative to
-the sample size.
+forty-quarter (ten-year) window. The parsimonious ARIMA forecasts best — the
+only model with Theil's $U<1$ — followed by the equal-weight combination; the
+richer VAR(2) and BVAR(2) rank last, heavily penalised by the COVID quarters
+inside the evaluation window.
 
 **Statistical significance.** The Diebold--Mariano test assesses whether
-accuracy differences are statistically significant. With only ten
-one-quarter forecasts the test has limited power, and the presence of
+accuracy differences are statistically significant. With forty
+one-quarter forecasts the test still has limited power, and the presence of
 COVID-affected quarters inflates the variance of the loss differential.
 
 **Interval calibration.** Empirical coverage of the 90% predictive
 interval is an additional accuracy metric: a well-calibrated model should
 cover the realised value about 9 times out of 10.
 
-**Why the BVAR(2) is preferred.** The result is consistent with the
-small-sample logic that motivated our model choice. With `r n_obs`
-quarterly observations and 21 parameters, the OLS VAR pays a variance
-penalty for its flexibility; the AR(2) is parsimonious but cannot exploit
-information in inflation and the interest rate; the ARIMA may collapse
-to a lower-order representation. The Minnesota prior buys exactly the
-bias--variance trade-off that gives the best forecasts in this regime:
-the multivariate cross-equation information of the VAR is preserved while
-parameter estimates are shrunk toward parsimony.
+**Why the ranking comes out this way.** The COVID observations dominate the
+squared-error loss and destabilise the recursively re-estimated multivariate
+models: with `r n_obs` quarterly observations and 21 parameters the OLS VAR(2)
+pays the largest variance penalty, and even the Minnesota-shrunk BVAR(2) cannot
+fully absorb the 2020 outliers (echoing Lenza & Primiceri, 2022, and Carriero et
+al., 2024). The univariate ARIMA, and the equal-weight combination that
+diversifies across models, are the most robust. Excluding the COVID quarters the
+five models are near-tied (RMSE 4.2--4.5), confirming that the gap is an outlier
+phenomenon rather than evidence of a uniformly superior specification.
 
 # Conclusion
 
@@ -1356,7 +1389,7 @@ The analysis specifies and evaluates four competing models for the
 year-on-year real GDP growth rate of Spain over 2001Q1--2025Q4 using quarterly
 data from Eurostat. The descriptive evidence (autocorrelation pattern, KPSS,
 ADF, rolling moments) is consistent with a persistent but bounded process for
-$\Delta y_t$, while inflation and the long-term interest rate display the
+$\Delta y_t$, while inflation and the short-term interest rate display the
 persistence typical of euro-area macro variables. Pre-specified Chow tests, the
 Quandt--Andrews sup-$F$, and the Bai--Perron procedure assess parameter
 constancy, with the COVID-19 episode representing the most disruptive event —
@@ -1369,13 +1402,13 @@ diagnostics and the VAR(2) is covariance-stationary. Block Granger-causality
 tests probe the predictive relationships among the three variables.
 
 In the one-step-ahead pseudo-out-of-sample forecasting exercise, the
-**Bayesian VAR(2)** — our **preferred specification** — is evaluated against
-the AR(2), ARIMA, and unrestricted VAR(2) benchmarks. The Minnesota
-prior provides the natural bias--variance trade-off for a system with
-`r n_obs` quarterly observations and 21 reduced-form parameters,
-regularising the coefficient estimates while preserving the multivariate
-information content. Diebold--Mariano tests of equal predictive accuracy
-are reported over the ten-quarter evaluation window.
+**Bayesian VAR(2)** — our *a priori* multivariate benchmark — is evaluated
+against the AR(2), ARIMA, and unrestricted VAR(2). Over the COVID-dominated
+ten-year window the parsimonious ARIMA and the equal-weight combination forecast
+most accurately, while the VAR(2) and BVAR(2) are penalised by the 2020 outliers;
+no Diebold--Mariano test rejects equal predictive accuracy, so the ranking is
+suggestive rather than decisive. Diebold--Mariano tests are reported over the
+forty-quarter (ten-year) evaluation window.
 
 ## References
 
